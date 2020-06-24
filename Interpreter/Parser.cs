@@ -80,6 +80,12 @@ namespace Interpreter
 
             switch (token.Type)
             {
+                case TokenType.Plus:
+                    Eat(TokenType.Plus);
+                    return new ASTUnaryOperator(token, Factor());
+                case TokenType.Minus:
+                    Eat(TokenType.Minus);
+                    return new ASTUnaryOperator(token, Factor());
                 case TokenType.Number:
                     Eat(TokenType.Number);
                     return new ASTNumber(token);
