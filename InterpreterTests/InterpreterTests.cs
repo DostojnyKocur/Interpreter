@@ -13,7 +13,8 @@ namespace InterpreterTests
         public void CorrectValues(string value, string expected)
         {
             var lexer = new Lexer(value);
-            var interpreter = new Interpreter.Interpreter(lexer);
+            var parser = new Parser(lexer);
+            var interpreter = new Interpreter.Interpreter(parser);
             var result = interpreter.Run();
 
             Assert.AreEqual(expected, result);

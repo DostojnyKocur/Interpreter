@@ -26,7 +26,8 @@ namespace Interpreter
                     }
 
                     var lexer = new Lexer(text);
-                    var interpreter = new Interpreter(lexer);
+                    var parser = new Parser(lexer);
+                    var interpreter = new Interpreter(parser);
                     var result = interpreter.Run();
 
                     Console.WriteLine(result);

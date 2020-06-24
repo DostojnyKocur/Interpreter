@@ -1,111 +1,61 @@
 ﻿using System;
-using System.Linq;
+using Interpreter.AST;
 
 namespace Interpreter
 {
     public class Interpreter
     {
-        private static readonly TokenType[] TermOperators = { TokenType.Plus, TokenType.Minus };
-        private static readonly TokenType[] FactorOperators = { TokenType.Mul, TokenType.Div, TokenType.Mod };
+        private readonly Parser _parser;
 
-        private readonly Lexer _lexer;
-        private Token _currentToken = null;
-
-        public Interpreter(Lexer lexer)
+        public Interpreter(Parser parser)
         {
-            _lexer = lexer;
-            _currentToken = _lexer.GetNextToken();
+            _parser = parser;
         }
 
         public string Run()
         {
-            var result = Expression();
+            var root = _parser.Parse();
+
+            var result = Visit(root);
 
             return $"{result}";
         }
 
-        private double Expression()
+        private double Visit(ASTNode node)
         {
-            var result = Term();
-
-            while (TermOperators.Contains(_currentToken.Type))
+            switch (node)
             {
-                var token = _currentToken;
-
-                switch (token.Type)
-                {
-                    case TokenType.Plus:
-                        Eat(TokenType.Plus);
-                        result += Term();
-                        break;
-                    case TokenType.Minus:
-                        Eat(TokenType.Minus);
-                        result -= Term();
-                        break;
-                }
+                case ASTNumber number:
+                    return VisitNumber(number);
+                case ASTBinaryOperator binaryOperator:
+                    return VisitBinaryOperator(binaryOperator);
             }
 
-            return result;
+            throw new ArgumentException($"No visit method for node type {node.GetType()}");
         }
 
-        private double Term()
+        private double VisitNumber(ASTNumber node)
         {
-            var result = Factor();
-
-            while (FactorOperators.Contains(_currentToken.Type))
-            {
-                var token = _currentToken;
-
-                switch (token.Type)
-                {
-                    case TokenType.Mul:
-                        Eat(TokenType.Mul);
-                        result *= Factor();
-                        break;
-                    case TokenType.Div:
-                        Eat(TokenType.Div);
-                        result /= Factor();
-                        break;
-                    case TokenType.Mod:
-                        Eat(TokenType.Mod);
-                        result %= Factor();
-                        break;
-                }
-            }
-
-            return result;
+            return node.Value;
         }
 
-        private double Factor()
+        private double VisitBinaryOperator(ASTBinaryOperator node)
         {
-            var token = _currentToken;
-
-            switch(token.Type)
+            switch (node.Type)
             {
-                case TokenType.Number:
-                    Eat(TokenType.Number);
-                    return token.Value.ToNumber();
-                case TokenType.LParen:
-                    Eat(TokenType.LParen);
-                    var result = Expression();
-                    Eat(TokenType.RParen);
-                    return result;
+                case TokenType.Plus:
+                    return Visit(node.Left) + Visit(node.Right);
+                case TokenType.Minus:
+                    return Visit(node.Left) - Visit(node.Right);
+                case TokenType.Mul:
+                    return Visit(node.Left) * Visit(node.Right);
+                case TokenType.Div:
+                    return Visit(node.Left) / Visit(node.Right);
+                case TokenType.Mod:
+                    return Visit(node.Left) % Visit(node.Right);
             }
 
-            throw new InvalidOperationException("Error parsing input");
+            throw new ArgumentException($"Invalid AST node type {node.GetType()}");
         }
-
-        private void Eat(TokenType tokenType)
-        {
-            if (_currentToken.Type == tokenType)
-            {
-                _currentToken = _lexer.GetNextToken();
-            }
-            else
-            {
-                throw new InvalidOperationException("Error parsing input");
-            }
-        }
-
     }
 }
