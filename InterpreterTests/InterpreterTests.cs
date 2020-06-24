@@ -6,6 +6,7 @@ namespace InterpreterTests
     {
         [TestCase("3.2    -   1", "2.2")]
         [TestCase("7.9   +  9.1", "17")]
+        [TestCase("6%4 * 9", "18")]
         public void CorrectValues(string value, string expected)
         {
             var interpreter = new Interpreter.Interpreter(value);

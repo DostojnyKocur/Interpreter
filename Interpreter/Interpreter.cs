@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Linq;
 
 namespace Interpreter
 {
     public class Interpreter
     {
+        private static readonly TokenType[] Operators = { TokenType.Plus, TokenType.Minus, TokenType.Mul, TokenType.Div, TokenType.Mod };
+
         private string _text = string.Empty;
         private int _position = 0;
         private char _currentChar = char.MinValue;
@@ -15,39 +18,46 @@ namespace Interpreter
         {
             _currentToken = GetNextToken();
 
-            var left = _currentToken;
+            var result = Term();
 
-            Eat(TokenType.Number);
-
-            var operation = _currentToken;
-
-            Eat(operation.Type);
-
-            var right = _currentToken;
-
-            Eat(TokenType.Number);
-
-            double result = 0;
-            switch(operation.Type)
+            while(Operators.Contains(_currentToken.Type))
             {
-                case TokenType.Plus:
-                    result = left.Value.ToNumber() + right.Value.ToNumber();
-                    break;
-                case TokenType.Minus:
-                    result = left.Value.ToNumber() - right.Value.ToNumber();
-                    break;
-                case TokenType.Mul:
-                    result = left.Value.ToNumber() * right.Value.ToNumber();
-                    break;
-                case TokenType.Div:
-                    result = left.Value.ToNumber() / right.Value.ToNumber();
-                    break;
-                case TokenType.Mod:
-                    result = left.Value.ToNumber() % right.Value.ToNumber();
-                    break;
+                var token = _currentToken;
+
+                switch (token.Type)
+                {
+                    case TokenType.Plus:
+                        Eat(TokenType.Plus);
+                        result += Term();
+                        break;
+                    case TokenType.Minus:
+                        Eat(TokenType.Minus);
+                        result -= Term();
+                        break;
+                    case TokenType.Mul:
+                        Eat(TokenType.Mul);
+                        result *= Term();
+                        break;
+                    case TokenType.Div:
+                        Eat(TokenType.Div);
+                        result /= Term();
+                        break;
+                    case TokenType.Mod:
+                        Eat(TokenType.Mod);
+                        result %= Term();
+                        break;
+                }
             }
 
             return $"{result}";
+        }
+
+        private double Term()
+        {
+            var token = _currentToken;
+            Eat(TokenType.Number);
+
+            return token.Value.ToNumber();
         }
 
         private Token GetNextToken()

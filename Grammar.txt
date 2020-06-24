@@ -1,0 +1,2 @@
+expression		:	factor ((MUL | DIV) factor)*
+factor			:	NUMBER
