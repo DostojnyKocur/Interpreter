@@ -4,6 +4,7 @@
     {
         Number,
         Plus,
+        Minus,
         EOF
     }
 }
