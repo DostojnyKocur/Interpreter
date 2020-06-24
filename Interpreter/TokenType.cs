@@ -5,6 +5,9 @@
         Number,
         Plus,
         Minus,
+        Mul,
+        Div,
+        Mod,
         EOF
     }
 }

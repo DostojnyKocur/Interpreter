@@ -21,15 +21,7 @@ namespace Interpreter
 
             var operation = _currentToken;
 
-            switch(operation.Type)
-            {
-                case TokenType.Plus:
-                    Eat(TokenType.Plus);
-                    break;
-                case TokenType.Minus:
-                    Eat(TokenType.Minus);
-                    break;
-            }
+            Eat(operation.Type);
 
             var right = _currentToken;
 
@@ -43,6 +35,15 @@ namespace Interpreter
                     break;
                 case TokenType.Minus:
                     result = left.Value.ToNumber() - right.Value.ToNumber();
+                    break;
+                case TokenType.Mul:
+                    result = left.Value.ToNumber() * right.Value.ToNumber();
+                    break;
+                case TokenType.Div:
+                    result = left.Value.ToNumber() / right.Value.ToNumber();
+                    break;
+                case TokenType.Mod:
+                    result = left.Value.ToNumber() % right.Value.ToNumber();
                     break;
             }
 
@@ -64,17 +65,25 @@ namespace Interpreter
                     return new Token(TokenType.Number, GetNumber());
                 }
 
-                if(_currentChar == '+')
+                switch(_currentChar)
                 {
-                    Advance();
-                    return new Token(TokenType.Plus);
+                    case '+':
+                        Advance();
+                        return new Token(TokenType.Plus);
+                    case '-':
+                        Advance();
+                        return new Token(TokenType.Minus);
+                    case '*':
+                        Advance();
+                        return new Token(TokenType.Mul);
+                    case '/':
+                        Advance();
+                        return new Token(TokenType.Div);
+                    case '%':
+                        Advance();
+                        return new Token(TokenType.Mod);
                 }
 
-                if (_currentChar == '-')
-                {
-                    Advance();
-                    return new Token(TokenType.Minus);
-                }
 
                 throw new InvalidOperationException("Error parsing input");
             }
