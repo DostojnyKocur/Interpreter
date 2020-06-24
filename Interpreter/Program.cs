@@ -10,11 +10,20 @@ namespace Interpreter
 
             while (true)
             {
-                var text = string.Empty;
                 try
                 {
                     Console.Write("interpreter> ");
-                    text = Console.ReadLine();
+                    var text = Console.ReadLine();
+
+                    if (string.IsNullOrWhiteSpace(text))
+                    {
+                        continue;
+                    }
+
+                    if (text.Length == 4 && (text.ToLower() == "exit" || text.ToLower() == "quit"))
+                    {
+                        break;
+                    }
 
                     var lexer = new Lexer(text);
                     var interpreter = new Interpreter(lexer);
@@ -25,16 +34,6 @@ namespace Interpreter
                 catch (Exception exception)
                 {
                     Console.WriteLine($"Exception: {exception.Message}");
-                }
-
-                if (string.IsNullOrWhiteSpace(text))
-                {
-                    continue;
-                }
-
-                if (text.Length == 4 && (text.ToLower() == "exit" || text.ToLower() == "quit"))
-                {
-                    break;
                 }
             }
         }
