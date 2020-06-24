@@ -42,6 +42,12 @@ namespace Interpreter
                     case '%':
                         Advance();
                         return new Token(TokenType.Mod);
+                    case '(':
+                        Advance();
+                        return new Token(TokenType.LParen);
+                    case ')':
+                        Advance();
+                        return new Token(TokenType.RParen);
                 }
 
                 throw new InvalidOperationException("Error parsing input");

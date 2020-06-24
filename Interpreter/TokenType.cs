@@ -8,6 +8,8 @@
         Mul,
         Div,
         Mod,
+        LParen,
+        RParen,
         EOF
     }
 }

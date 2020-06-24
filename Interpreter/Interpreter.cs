@@ -79,9 +79,20 @@ namespace Interpreter
         private double Factor()
         {
             var token = _currentToken;
-            Eat(TokenType.Number);
 
-            return token.Value.ToNumber();
+            switch(token.Type)
+            {
+                case TokenType.Number:
+                    Eat(TokenType.Number);
+                    return token.Value.ToNumber();
+                case TokenType.LParen:
+                    Eat(TokenType.LParen);
+                    var result = Expression();
+                    Eat(TokenType.RParen);
+                    return result;
+            }
+
+            throw new InvalidOperationException("Error parsing input");
         }
 
         private void Eat(TokenType tokenType)
