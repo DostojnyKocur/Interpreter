@@ -5,22 +5,30 @@ namespace Interpreter
 {
     public class Interpreter
     {
-        private static readonly TokenType[] Operators = { TokenType.Plus, TokenType.Minus, TokenType.Mul, TokenType.Div, TokenType.Mod };
+        private static readonly TokenType[] TermOperators = { TokenType.Plus, TokenType.Minus };
+        private static readonly TokenType[] FactorOperators = { TokenType.Mul, TokenType.Div, TokenType.Mod };
 
-        private string _text = string.Empty;
-        private int _position = 0;
-        private char _currentChar = char.MinValue;
+        private readonly Lexer _lexer;
         private Token _currentToken = null;
 
-        public Interpreter(string text) => (_text, _currentChar) = (text, text[_position]);
+        public Interpreter(Lexer lexer)
+        {
+            _lexer = lexer;
+            _currentToken = _lexer.GetNextToken();
+        }
 
         public string Run()
         {
-            _currentToken = GetNextToken();
+            var result = Expression();
 
+            return $"{result}";
+        }
+
+        private double Expression()
+        {
             var result = Term();
 
-            while(Operators.Contains(_currentToken.Type))
+            while (TermOperators.Contains(_currentToken.Type))
             {
                 var token = _currentToken;
 
@@ -34,25 +42,41 @@ namespace Interpreter
                         Eat(TokenType.Minus);
                         result -= Term();
                         break;
+                }
+            }
+
+            return result;
+        }
+
+        private double Term()
+        {
+            var result = Factor();
+
+            while (FactorOperators.Contains(_currentToken.Type))
+            {
+                var token = _currentToken;
+
+                switch (token.Type)
+                {
                     case TokenType.Mul:
                         Eat(TokenType.Mul);
-                        result *= Term();
+                        result *= Factor();
                         break;
                     case TokenType.Div:
                         Eat(TokenType.Div);
-                        result /= Term();
+                        result /= Factor();
                         break;
                     case TokenType.Mod:
                         Eat(TokenType.Mod);
-                        result %= Term();
+                        result %= Factor();
                         break;
                 }
             }
 
-            return $"{result}";
+            return result;
         }
 
-        private double Term()
+        private double Factor()
         {
             var token = _currentToken;
             Eat(TokenType.Number);
@@ -60,52 +84,11 @@ namespace Interpreter
             return token.Value.ToNumber();
         }
 
-        private Token GetNextToken()
-        {
-            while(_currentChar != char.MaxValue)
-            {
-                if(char.IsWhiteSpace(_currentChar))
-                {
-                    SkipWhitespace();
-                    continue;
-                }
-
-                if(char.IsDigit(_currentChar))
-                {
-                    return new Token(TokenType.Number, GetNumber());
-                }
-
-                switch(_currentChar)
-                {
-                    case '+':
-                        Advance();
-                        return new Token(TokenType.Plus);
-                    case '-':
-                        Advance();
-                        return new Token(TokenType.Minus);
-                    case '*':
-                        Advance();
-                        return new Token(TokenType.Mul);
-                    case '/':
-                        Advance();
-                        return new Token(TokenType.Div);
-                    case '%':
-                        Advance();
-                        return new Token(TokenType.Mod);
-                }
-
-
-                throw new InvalidOperationException("Error parsing input");
-            }
-
-            return new Token(TokenType.EOF);
-        }
-
         private void Eat(TokenType tokenType)
         {
-            if(_currentToken.Type == tokenType)
+            if (_currentToken.Type == tokenType)
             {
-                _currentToken = GetNextToken();
+                _currentToken = _lexer.GetNextToken();
             }
             else
             {
@@ -113,39 +96,5 @@ namespace Interpreter
             }
         }
 
-        private void Advance()
-        {
-            _position += 1;
-
-            if (_position > _text.Length - 1)
-            {
-                _currentChar = char.MaxValue;
-            }
-            else
-            {
-                _currentChar = _text[_position];
-            }
-        }
-
-        private void SkipWhitespace()
-        {
-            while (char.IsWhiteSpace(_currentChar) && _currentChar != char.MaxValue)
-            {
-                Advance();
-            }
-        }
-
-        private string GetNumber()
-        {
-            var result = string.Empty;
-
-            while ((char.IsDigit(_currentChar) || _currentChar == '.') && _currentChar != char.MaxValue)
-            {
-                result += _currentChar;
-                Advance();
-            }
-
-            return result;
-        }
     }
 }
