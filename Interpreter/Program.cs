@@ -1,10 +1,42 @@
 ﻿using System;
+using System.IO;
 
 namespace Interpreter
 {
     class Program
     {
         static void Main(string[] args)
+        {
+            if(args.Length == 1)
+            {
+                InterpretFile(args[0]);
+            }
+            else
+            {
+                InteractiveMode();
+            }
+        }
+
+        private static void InterpretFile(string file)
+        {
+            if(File.Exists(file))
+            {
+                var fileContent = File.ReadAllText(file);
+
+                var lexer = new Lexer(fileContent);
+                var parser = new Parser(lexer);
+                var interpreter = new Interpreter(parser);
+                interpreter.Run();
+
+                interpreter.DebugPrintGlobalScope();
+            }
+            else
+            {
+                Console.WriteLine($"File {file} does not exist. Exiting...");
+            }
+        }
+
+        private static void InteractiveMode()
         {
             Console.WriteLine("To exit type 'exit' or 'quit'");
 
@@ -28,9 +60,9 @@ namespace Interpreter
                     var lexer = new Lexer(text);
                     var parser = new Parser(lexer);
                     var interpreter = new Interpreter(parser);
-                    var result = interpreter.Run();
+                    interpreter.Run();
 
-                    Console.WriteLine(result);
+                    interpreter.DebugPrintGlobalScope();
                 }
                 catch (Exception exception)
                 {

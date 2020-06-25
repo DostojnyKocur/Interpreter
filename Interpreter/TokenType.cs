@@ -3,13 +3,22 @@
     public enum TokenType
     {
         Number,
+
         Plus,
         Minus,
-        Mul,
-        Div,
-        Mod,
-        LParen,
-        RParen,
+        Multiplication,
+        Divide,
+        Modulo,
+
+        Id,
+
+        ScopeBegin,
+        ScopeEnd,
+        LeftParen,
+        RightParen,
+        Assign,
+        Semicolon,
+
         EOF
     }
 }

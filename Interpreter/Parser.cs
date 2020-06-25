@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Interpreter.AST;
 
@@ -7,7 +8,7 @@ namespace Interpreter
     public class Parser
     {
         private static readonly TokenType[] TermOperators = { TokenType.Plus, TokenType.Minus };
-        private static readonly TokenType[] FactorOperators = { TokenType.Mul, TokenType.Div, TokenType.Mod };
+        private static readonly TokenType[] FactorOperators = { TokenType.Multiplication, TokenType.Divide, TokenType.Modulo };
 
         private readonly Lexer _lexer;
         private Token _currentToken = null;
@@ -20,7 +21,69 @@ namespace Interpreter
 
         public ASTNode Parse()
         {
-            return Expression();
+            var node = Program();
+            if(_currentToken.Type != TokenType.EOF)
+            {
+                ThrowParsingException();
+            }
+
+            return node;
+        }
+
+        private ASTNode Program()
+        {
+            return CompoundStatement();
+        }
+
+        private ASTCompound CompoundStatement()
+        {
+            Eat(TokenType.ScopeBegin);
+            var nodes = StatementList();
+            Eat(TokenType.ScopeEnd);
+            return new ASTCompound(nodes);
+        }
+
+        private IEnumerable<ASTNode> StatementList()
+        {
+            var results = new List<ASTNode>();
+
+            results.Add(Statement());
+
+            while (_currentToken.Type != TokenType.ScopeEnd)
+            {
+                results.Add(Statement());
+            }
+
+            if (_currentToken.Type == TokenType.Id)
+            {
+                ThrowParsingException();
+            }
+
+            return results;
+        }
+
+        private ASTNode Statement()
+        {
+            switch(_currentToken.Type)
+            {
+                case TokenType.ScopeBegin:
+                    return CompoundStatement();
+                case TokenType.Id:
+                    var node = AssignmentStatement();
+                    Eat(TokenType.Semicolon);
+                    return node;
+                default:
+                    return Empty();
+            }
+        }
+
+        private ASTAssign AssignmentStatement()
+        {
+            var left = Variable();
+            var token = _currentToken;
+            Eat(TokenType.Assign);
+            var right = Expression();
+            return new ASTAssign(left, token, right);
         }
 
         private ASTNode Expression()
@@ -57,14 +120,14 @@ namespace Interpreter
 
                 switch (token.Type)
                 {
-                    case TokenType.Mul:
-                        Eat(TokenType.Mul);
+                    case TokenType.Multiplication:
+                        Eat(TokenType.Multiplication);
                         break;
-                    case TokenType.Div:
-                        Eat(TokenType.Div);
+                    case TokenType.Divide:
+                        Eat(TokenType.Divide);
                         break;
-                    case TokenType.Mod:
-                        Eat(TokenType.Mod);
+                    case TokenType.Modulo:
+                        Eat(TokenType.Modulo);
                         break;
                 }
 
@@ -89,14 +152,27 @@ namespace Interpreter
                 case TokenType.Number:
                     Eat(TokenType.Number);
                     return new ASTNumber(token);
-                case TokenType.LParen:
-                    Eat(TokenType.LParen);
+                case TokenType.LeftParen:
+                    Eat(TokenType.LeftParen);
                     var node = Expression();
-                    Eat(TokenType.RParen);
+                    Eat(TokenType.RightParen);
                     return node;
+                default:
+                    Eat(TokenType.Id);
+                    return new ASTVariable(token);
             }
+        }
 
-            throw new InvalidOperationException("Error parsing input");
+        private ASTVariable Variable()
+        {
+            var node = new ASTVariable(_currentToken);
+            Eat(TokenType.Id);
+            return node;
+        }
+
+        private ASTEmpty Empty()
+        {
+            return new ASTEmpty();
         }
 
         private void Eat(TokenType tokenType)
@@ -107,8 +183,13 @@ namespace Interpreter
             }
             else
             {
-                throw new InvalidOperationException("Error parsing input");
+                ThrowParsingException();
             }
+        }
+
+        private void ThrowParsingException()
+        {
+            throw new InvalidOperationException("Error parsing input");
         }
     }
 }
