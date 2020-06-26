@@ -4,10 +4,10 @@
     {
         private readonly Token _operation;
 
-        public ASTUnaryOperator(Token operation, ASTNode node) => (_operation, Node) = (operation, node);
+        public ASTUnaryOperator(Token operation, ASTNode expression) => (_operation, Expression) = (operation, expression);
 
         public TokenType Type => _operation.Type;
-        public ASTNode Node { get; }
+        public ASTNode Expression { get; }
     }
 
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Interpreter.Symbols;
 
 namespace Interpreter
 {
@@ -23,12 +24,7 @@ namespace Interpreter
             {
                 var fileContent = File.ReadAllText(file);
 
-                var lexer = new Lexer(fileContent);
-                var parser = new Parser(lexer);
-                var interpreter = new Interpreter(parser);
-                interpreter.Run();
-
-                interpreter.DebugPrintGlobalScope();
+                Process(fileContent);
             }
             else
             {
@@ -57,18 +53,30 @@ namespace Interpreter
                         break;
                     }
 
-                    var lexer = new Lexer(text);
-                    var parser = new Parser(lexer);
-                    var interpreter = new Interpreter(parser);
-                    interpreter.Run();
-
-                    interpreter.DebugPrintGlobalScope();
+                    Process(text);
                 }
                 catch (Exception exception)
                 {
                     Console.WriteLine($"Exception: {exception.Message}");
                 }
             }
+        }
+
+        private static void Process(string text)
+        {
+            var lexer = new Lexer(text);
+            var parser = new Parser(lexer);
+
+            var tree = parser.Parse();
+
+            var symbolTableBuilder = new SymbolTableBuilder();
+            symbolTableBuilder.Prepare(tree);
+
+            var interpreter = new Interpreter();
+            interpreter.Run(tree);
+
+            interpreter.DebugPrintGlobalScope();
+            symbolTableBuilder.DebugPrintSymbolTable();
         }
     }
 }

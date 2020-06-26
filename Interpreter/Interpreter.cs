@@ -7,12 +7,6 @@ namespace Interpreter
     public class Interpreter
     {
         private readonly Dictionary<string, object> _globalScope = new Dictionary<string, object>();
-        private readonly Parser _parser;
-
-        public Interpreter(Parser parser)
-        {
-            _parser = parser;
-        }
 
         public void DebugPrintGlobalScope()
         {
@@ -24,11 +18,9 @@ namespace Interpreter
             Console.WriteLine("==== ==== ====");
         }
 
-        public void Run()
+        public void Run(ASTNode tree)
         {
-            var root = _parser.Parse();
-
-            Visit(root);
+            Visit(tree);
         }
 
         private dynamic Visit(ASTNode node)
@@ -66,7 +58,7 @@ namespace Interpreter
                     return null;
             }
 
-            throw new ArgumentException($"No visit method for node type {node.GetType()}");
+            throw new ArgumentException($"[Interpreter] No visit method for node type {node.GetType()}");
         }
 
         private void VisitAssign(ASTAssign node)
@@ -148,9 +140,9 @@ namespace Interpreter
             switch (node.Type)
             {
                 case TokenType.Plus:
-                    return +Visit(node.Node);
+                    return +Visit(node.Expression);
                 case TokenType.Minus:
-                    return -Visit(node.Node);
+                    return -Visit(node.Expression);
             }
 
             throw new ArgumentException($"Invalid AST node type {node.GetType()}");

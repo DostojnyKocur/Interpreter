@@ -7,7 +7,7 @@ namespace Interpreter
     {
         private static readonly Dictionary<string, Token> ReserverKeywords = new Dictionary<string, Token>
         {
-            { "number",  new Token(TokenType.TypeNumber) }
+            { "number",  new Token(TokenType.TypeNumber, "number") }
         };
 
         private string _text = string.Empty;
