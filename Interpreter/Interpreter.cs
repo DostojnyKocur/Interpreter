@@ -17,7 +17,7 @@ namespace Interpreter
         public void DebugPrintGlobalScope()
         {
             Console.WriteLine("==== GLOBAL SCOPE ====");
-            foreach(var entry in _globalScope)
+            foreach (var entry in _globalScope)
             {
                 Console.WriteLine($"{entry.Key}\t:{entry.Value}");
             }
@@ -38,6 +38,12 @@ namespace Interpreter
                 case ASTEmpty empty:
                     VisitEmpty(empty);
                     return null;
+                case ASTProgram program:
+                    Visit(program.Root);
+                    return null;
+                case ASTType type:
+                    VisitType(type);
+                    return null;
                 case ASTNumber number:
                     return VisitNumber(number);
                 case ASTBinaryOperator binaryOperator:
@@ -52,6 +58,12 @@ namespace Interpreter
                     return null;
                 case ASTVariable variable:
                     return VisitVariable(variable);
+                case ASTVariablesDeclarations variablesDeclarations:
+                    VisitVariablesDeclarations(variablesDeclarations);
+                    return null;
+                case ASTVariableDeclaration variableDeclaration:
+                    VisitVariableDeclaration(variableDeclaration);
+                    return null;
             }
 
             throw new ArgumentException($"No visit method for node type {node.GetType()}");
@@ -59,13 +71,23 @@ namespace Interpreter
 
         private void VisitAssign(ASTAssign node)
         {
-            var variableName = node.Left.Name;
-            
-            if(!_globalScope.ContainsKey(variableName))
+            var value = Visit(node.Right);
+
+            switch (node.Left)
             {
-                var value = Visit(node.Right);
-                _globalScope.Add(variableName, value);
+                case ASTVariable variable:
+                    _globalScope[variable.Name] = value;
+                    return;
+                case ASTVariablesDeclarations variablesDeclarations:
+                    Visit(variablesDeclarations);
+                    foreach (var variable in variablesDeclarations.Children)
+                    {
+                        _globalScope[variable.Variable.Name] = value;
+                    }
+                    return;
             }
+
+            throw new ArgumentException($"Invalid AST node type {node.GetType()}");
         }
 
         private object VisitVariable(ASTVariable node)
@@ -90,9 +112,32 @@ namespace Interpreter
             return;
         }
 
+        private void VisitType(ASTType node)
+        {
+            return;
+        }
+
+        private void VisitVariablesDeclarations(ASTVariablesDeclarations node)
+        {
+            foreach (var child in node.Children)
+            {
+                Visit(child);
+            }
+        }
+
+        private void VisitVariableDeclaration(ASTVariableDeclaration node)
+        {
+            var variableName = node.Variable.Name;
+
+            if (!_globalScope.ContainsKey(variableName))
+            {
+                _globalScope.Add(variableName, 0);
+            }
+        }
+
         private void VisitCompound(ASTCompound node)
         {
-            foreach(var child in node.Children)
+            foreach (var child in node.Children)
             {
                 Visit(child);
             }

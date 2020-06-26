@@ -1,10 +1,13 @@
-program						:	compound_statement
+program						:	statement
 compound_statement			:	BEGIN statement_list END
 statement_list				:	statement | statement SEMI statement_list
-statement					:	compound_statement SEMI | assignment_statement | empty
-assignment_statement		:	variable ASSIGN expr
+statement					:	compound_statement SEMI | assignment_statement | variables_declarations | empty
+assignment_statement		:	variable ASSIGN expr | variables_declarations ASSIGN expr
 expression					:	term ((PLUS | MINUS) term)*
-term						:	factor ((MUL | DIV) factor)*
-factor						:	(PLUS | MINUS) factor | NUMBER | LPAREN expression RPAREN
+term						:	factor ((MUL | DIV | MOD) factor)*
+factor						:	(PLUS | MINUS) factor | NUMBER_CONST | LPAREN expression RPAREN
+variables_declarations		:	variable_declaration*
+variable_declaration		:	type_specification ID (COMMA ID)* SEMI
 variable					:	ID
+type_specification			:	NUMBER
 empty						:

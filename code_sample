@@ -1,9 +1,11 @@
 {
 	{
-		number = 2;
-		a = number;
-		b = 10 * a + 10 * number / 4;
-		c = a - - b;
+		/* this is a comment */
+		number t;
+		number z = 2;
+		number a = z;
+		number b = 10 * a + 10 * z / 4;
+		number c = a - - b;
 	}
-	x = 11;
+	number x = 11;
 }

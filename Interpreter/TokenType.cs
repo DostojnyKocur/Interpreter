@@ -2,7 +2,8 @@
 {
     public enum TokenType
     {
-        Number,
+        TypeNumber,
+        ConstNumber,
 
         Plus,
         Minus,
@@ -18,6 +19,7 @@
         RightParen,
         Assign,
         Semicolon,
+        Comma,
 
         EOF
     }

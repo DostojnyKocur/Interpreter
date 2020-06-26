@@ -30,9 +30,9 @@ namespace Interpreter
             return node;
         }
 
-        private ASTNode Program()
+        private ASTProgram Program()
         {
-            return CompoundStatement();
+            return new ASTProgram(Statement());
         }
 
         private ASTCompound CompoundStatement()
@@ -69,17 +69,32 @@ namespace Interpreter
                 case TokenType.ScopeBegin:
                     return CompoundStatement();
                 case TokenType.Id:
-                    var node = AssignmentStatement();
+                    var assignmentStatement = AssignmentStatement();
                     Eat(TokenType.Semicolon);
-                    return node;
+                    return assignmentStatement;
+                case TokenType.TypeNumber:
+                    var variablesDeclarations = VariablesDeclarations();
+                    if (_currentToken.Type == TokenType.Semicolon)
+                    {
+                        Eat(TokenType.Semicolon);
+                        return variablesDeclarations;
+                    }
+                    if(_currentToken.Type == TokenType.Assign)
+                    {
+                        var assignment = AssignmentStatement(variablesDeclarations);
+                        Eat(TokenType.Semicolon);
+                        return assignment;
+                    }
+                    ThrowParsingException();
+                    return null;
                 default:
                     return Empty();
             }
         }
 
-        private ASTAssign AssignmentStatement()
+        private ASTAssign AssignmentStatement(ASTNode leftNode = null)
         {
-            var left = Variable();
+            var left = leftNode ?? Variable();
             var token = _currentToken;
             Eat(TokenType.Assign);
             var right = Expression();
@@ -149,8 +164,8 @@ namespace Interpreter
                 case TokenType.Minus:
                     Eat(TokenType.Minus);
                     return new ASTUnaryOperator(token, Factor());
-                case TokenType.Number:
-                    Eat(TokenType.Number);
+                case TokenType.ConstNumber:
+                    Eat(TokenType.ConstNumber);
                     return new ASTNumber(token);
                 case TokenType.LeftParen:
                     Eat(TokenType.LeftParen);
@@ -163,10 +178,40 @@ namespace Interpreter
             }
         }
 
+        private ASTVariablesDeclarations VariablesDeclarations()
+        {
+            var variableType = Type();
+            var variables = new List<ASTVariable>();
+
+            variables.Add(Variable());
+
+            while(_currentToken.Type == TokenType.Comma)
+            {
+                Eat(TokenType.Comma);
+                variables.Add(Variable());
+            }
+
+            var result = new List<ASTVariableDeclaration>();
+
+            foreach(var variable in variables)
+            {
+                result.Add(new ASTVariableDeclaration(variable, variableType));
+            }
+
+            return new ASTVariablesDeclarations(result);
+        }
+
         private ASTVariable Variable()
         {
             var node = new ASTVariable(_currentToken);
             Eat(TokenType.Id);
+            return node;
+        }
+
+        private ASTType Type()
+        {
+            var node = new ASTType(_currentToken);
+            Eat(TokenType.TypeNumber);
             return node;
         }
 

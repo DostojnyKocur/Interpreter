@@ -5,7 +5,10 @@ namespace Interpreter
 {
     public class Lexer
     {
-        private static readonly Dictionary<string, Token> ReserverKeywords = new Dictionary<string, Token>();
+        private static readonly Dictionary<string, Token> ReserverKeywords = new Dictionary<string, Token>
+        {
+            { "number",  new Token(TokenType.TypeNumber) }
+        };
 
         private string _text = string.Empty;
         private int _position = 0;
@@ -25,7 +28,7 @@ namespace Interpreter
 
                 if (char.IsDigit(_currentChar))
                 {
-                    return new Token(TokenType.Number, GetNumber());
+                    return GetNumber();
                 }
 
                 if (char.IsLetterOrDigit(_currentChar))
@@ -45,8 +48,16 @@ namespace Interpreter
                         Advance();
                         return new Token(TokenType.Multiplication);
                     case '/':
-                        Advance();
-                        return new Token(TokenType.Divide);
+                        if (Peek() == '*')
+                        {
+                            SkipComment();
+                            continue;
+                        }
+                        else
+                        {
+                            Advance();
+                            return new Token(TokenType.Divide);
+                        }
                     case '%':
                         Advance();
                         return new Token(TokenType.Modulo);
@@ -68,6 +79,9 @@ namespace Interpreter
                     case ';':
                         Advance();
                         return new Token(TokenType.Semicolon);
+                    case ',':
+                        Advance();
+                        return new Token(TokenType.Comma);
                 }
 
                 throw new InvalidOperationException("Error parsing input");
@@ -94,13 +108,13 @@ namespace Interpreter
         {
             var peekPosition = _position + 1;
 
-            if(peekPosition > _text.Length - 1)
+            if (peekPosition > _text.Length - 1)
             {
                 return char.MaxValue;
             }
             else
             {
-                return _text[_position];
+                return _text[peekPosition];
             }
         }
 
@@ -112,17 +126,28 @@ namespace Interpreter
             }
         }
 
+        private void SkipComment()
+        {
+            while ((_currentChar != '*') || (Peek() != '/'))
+            {
+                Advance();
+            }
+
+            Advance();  // '*'
+            Advance();  // '/'
+        }
+
         private Token GetId()
         {
             var result = string.Empty;
 
-            while (char.IsLetterOrDigit(_currentChar) && _currentChar != char.MaxValue)
+            while ((char.IsLetterOrDigit(_currentChar) || _currentChar == '_') && _currentChar != char.MaxValue)
             {
                 result += _currentChar;
                 Advance();
             }
 
-            if(ReserverKeywords.ContainsKey(result))
+            if (ReserverKeywords.ContainsKey(result))
             {
                 return ReserverKeywords[result];
             }
@@ -130,7 +155,7 @@ namespace Interpreter
             return new Token(TokenType.Id, result);
         }
 
-        private string GetNumber()
+        private Token GetNumber()
         {
             var result = string.Empty;
 
@@ -140,7 +165,7 @@ namespace Interpreter
                 Advance();
             }
 
-            return result;
+            return new Token(TokenType.ConstNumber, result);
         }
     }
 }
