@@ -73,23 +73,47 @@ namespace Interpreter
                     Eat(TokenType.Semicolon);
                     return assignmentStatement;
                 case TokenType.TypeNumber:
-                    var variablesDeclarations = VariablesDeclarations();
-                    if (_currentToken.Type == TokenType.Semicolon)
-                    {
-                        Eat(TokenType.Semicolon);
-                        return variablesDeclarations;
-                    }
-                    if(_currentToken.Type == TokenType.Assign)
-                    {
-                        var assignment = AssignmentStatement(variablesDeclarations);
-                        Eat(TokenType.Semicolon);
-                        return assignment;
-                    }
-                    ThrowParsingException();
-                    return null;
+                    return StatementDeclarationsDefinitionsAssignments();
                 default:
                     return Empty();
             }
+        }
+
+        private ASTNode StatementDeclarationsDefinitionsAssignments()
+        {
+            var typeToken = _currentToken; //type
+            Eat(TokenType.TypeNumber);
+            var idToken = _currentToken; //id
+            Eat(TokenType.Id);
+
+            var type = new ASTType(typeToken);
+
+            if(_currentToken.Type == TokenType.Comma || 
+                _currentToken.Type == TokenType.Semicolon ||
+                _currentToken.Type == TokenType.Assign)
+            {
+                var firstVariable = new ASTVariable(idToken);
+                var variablesDeclarations = VariablesDeclarations(type, firstVariable);
+                if (_currentToken.Type == TokenType.Semicolon)
+                {
+                    Eat(TokenType.Semicolon);
+                    return variablesDeclarations;
+                }
+                if (_currentToken.Type == TokenType.Assign)
+                {
+                    var assignment = AssignmentStatement(variablesDeclarations);
+                    Eat(TokenType.Semicolon);
+                    return assignment;
+                }
+            }
+
+            if(_currentToken.Type == TokenType.LeftParen)
+            {
+                return FunctionDefinition(type, idToken);
+            }
+
+            ThrowParsingException();
+            return null;
         }
 
         private ASTAssign AssignmentStatement(ASTNode leftNode = null)
@@ -178,12 +202,49 @@ namespace Interpreter
             }
         }
 
-        private ASTVariablesDeclarations VariablesDeclarations()
+        private ASTFunctionDefinition FunctionDefinition(ASTType returnType, Token name)
         {
-            var variableType = Type();
+            var argumentList = ArgumentList();
+            var body = CompoundStatement();
+            return new ASTFunctionDefinition(returnType, name, argumentList, body);
+        }
+
+        private ASTArgumentList ArgumentList()
+        {
+            Eat(TokenType.LeftParen);
+
+            var arguments = new List<(ASTType type, ASTVariable name)>();
+            if (_currentToken.Type == TokenType.TypeNumber)
+            {
+                var param = (Type(), Variable());
+                arguments.Add(param);
+
+                while (_currentToken.Type == TokenType.Comma)
+                {
+                    Eat(TokenType.Comma);
+                    var anotherParam = (Type(), Variable());
+                    arguments.Add(anotherParam);
+                }
+            }
+
+            Eat(TokenType.RightParen);
+
+            var result = new List<ASTVariableDeclaration>();
+
+            foreach (var argument in arguments)
+            {
+                result.Add(new ASTVariableDeclaration(argument.name, argument.type));
+            }
+
+            return new ASTArgumentList(result);
+        }
+
+        private ASTVariablesDeclarations VariablesDeclarations(ASTType type = null, ASTVariable firstVariable = null)
+        {
+            var variableType = type ?? Type();
             var variables = new List<ASTVariable>();
 
-            variables.Add(Variable());
+            variables.Add(firstVariable ?? Variable());
 
             while(_currentToken.Type == TokenType.Comma)
             {

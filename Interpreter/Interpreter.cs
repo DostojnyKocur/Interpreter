@@ -56,6 +56,9 @@ namespace Interpreter
                 case ASTVariableDeclaration variableDeclaration:
                     VisitVariableDeclaration(variableDeclaration);
                     return null;
+                case ASTFunctionDefinition functionDefinition:
+                    VisitFunctionDefinition(functionDefinition);
+                    return null;
             }
 
             throw new ArgumentException($"[Interpreter] No visit method for node type {node.GetType()}");
@@ -125,6 +128,11 @@ namespace Interpreter
             {
                 _globalScope.Add(variableName, 0);
             }
+        }
+
+        private void VisitFunctionDefinition(ASTFunctionDefinition node)
+        {
+            return;
         }
 
         private void VisitCompound(ASTCompound node)

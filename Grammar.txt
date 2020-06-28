@@ -1,11 +1,13 @@
 program						:	statement
-compound_statement			:	BEGIN statement_list END
+compound_statement			:	SCOPEBEGIN statement_list SCOPEEND
 statement_list				:	statement | statement SEMI statement_list
-statement					:	compound_statement SEMI | assignment_statement | variables_declarations | empty
+statement					:	compound_statement SEMI | assignment_statement | variables_declarations | function_definition | empty
 assignment_statement		:	variable ASSIGN expr | variables_declarations ASSIGN expr
 expression					:	term ((PLUS | MINUS) term)*
 term						:	factor ((MUL | DIV | MOD) factor)*
 factor						:	(PLUS | MINUS) factor | NUMBER_CONST | LPAREN expression RPAREN
+function_definition			:	type_specification ID argument_list compound_statement
+argument_list				:	LPAREN (type_specification ID (COMMA)+)* RPAREN
 variables_declarations		:	variable_declaration*
 variable_declaration		:	type_specification ID (COMMA ID)* SEMI
 variable					:	ID

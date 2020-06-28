@@ -4,8 +4,13 @@
 		number t;
 		number z = 2;
 		number a = z;
-		number b = 10 * a + 10 * z / 4;
+		number b = (10 * a) + 10 * (z / 4);
 		number c = a - - b;
 	}
 	number x = 11;
+	
+	number TestFunction(number param1, number param2)
+	{
+		number res = param1 * 3 + param2;
+	}
 }

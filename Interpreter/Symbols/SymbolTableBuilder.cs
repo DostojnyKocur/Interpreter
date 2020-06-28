@@ -51,6 +51,12 @@ namespace Interpreter.Symbols
                 case ASTVariable variable:
                     VisitVariable(variable);
                     break;
+                case ASTFunctionDefinition functionDefinition:
+                    VisitFunctionDefinition(functionDefinition);
+                    break;
+                case ASTArgumentList argumentList:
+                    VisitArgumentList(argumentList);
+                    break;
                 default:
                     throw new ArgumentException($"[SymbolTableBuilder] No visit method for node type {node.GetType()}");
             }
@@ -130,6 +136,28 @@ namespace Interpreter.Symbols
         {
             var variableName = node.Name;
             var variableSymbol = _symbolTable.Lookup(variableName);
+        }
+
+        private void VisitFunctionDefinition(ASTFunctionDefinition node)
+        {
+            var typeName = node.ReturnType.Name;
+            var typeSymbol = _symbolTable.Lookup(typeName);
+
+            var functionName = node.Name.Value;
+            var functionSymbol = new SymbolVariable(functionName, typeSymbol);
+
+            _symbolTable.Define(functionSymbol);
+
+            Visit(node.Arguments);
+            Visit(node.Body);
+        }
+
+        private void VisitArgumentList(ASTArgumentList node)
+        {
+            foreach(var argument in node.Arguments)
+            {
+                Visit(argument);
+            }
         }
     }
 }
