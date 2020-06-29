@@ -62,7 +62,7 @@ namespace Interpreter
                     return null;
             }
 
-            throw new ArgumentException($"[Interpreter] No visit method for node type {node.GetType()}");
+            throw new ArgumentException($"[{nameof(Interpreter)}] No visit method for node type {node.GetType()}");
         }
 
         private void VisitAssign(ASTAssign node)

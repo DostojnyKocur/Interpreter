@@ -1,9 +1,10 @@
 ﻿using System;
 using Interpreter.AST;
+using Interpreter.Symbols;
 
-namespace Interpreter.Symbols
+namespace Interpreter
 {
-    public class SymbolTableBuilder
+    public class SemanticAnalyzer
     {
         private readonly SymbolTable _symbolTable = new SymbolTable();
 
@@ -58,7 +59,7 @@ namespace Interpreter.Symbols
                     VisitArgumentList(argumentList);
                     break;
                 default:
-                    throw new ArgumentException($"[SymbolTableBuilder] No visit method for node type {node.GetType()}");
+                    throw new ArgumentException($"[{nameof(SemanticAnalyzer)}] No visit method for node type {node.GetType()}");
             }
         }
 
@@ -120,7 +121,7 @@ namespace Interpreter.Symbols
             switch (node.Left)
             {
                 case ASTVariable variable:
-                    VisitVariable(variable);
+                    Visit(variable);
                     break;
                 case ASTVariablesDeclarations variablesDeclarations:
                     Visit(variablesDeclarations);

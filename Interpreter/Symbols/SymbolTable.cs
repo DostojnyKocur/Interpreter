@@ -23,6 +23,11 @@ namespace Interpreter.Symbols
         public void Define(Symbol symbol)
         {
             Console.WriteLine($"Define symbol: {symbol}");
+            if(_symbols.ContainsKey(symbol.Name))
+            {
+                throw new ArgumentException($"Symbol {symbol.Name} already defined");
+            }
+
             _symbols.Add(symbol.Name, symbol);
         }
 
