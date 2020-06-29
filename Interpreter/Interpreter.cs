@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Interpreter.AST;
+using Interpreter.Tokens;
 
 namespace Interpreter
 {
@@ -10,10 +11,10 @@ namespace Interpreter
 
         public void DebugPrintGlobalScope()
         {
-            Console.WriteLine("==== GLOBAL SCOPE ====");
+            Console.WriteLine("\r\n==== GLOBAL SCOPE ====");
             foreach (var entry in _globalScope)
             {
-                Console.WriteLine($"{entry.Key}\t:{entry.Value}");
+                Console.WriteLine("{0, 20}\t:{1, 25}", entry.Key.Trim(), entry.Value);
             }
             Console.WriteLine("==== ==== ====");
         }

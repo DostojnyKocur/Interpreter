@@ -1,4 +1,4 @@
-﻿namespace Interpreter
+﻿namespace Interpreter.Tokens
 {
     public enum TokenType
     {

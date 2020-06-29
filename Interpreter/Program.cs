@@ -71,12 +71,11 @@ namespace Interpreter
 
             var symbolTableBuilder = new SymbolTableBuilder();
             symbolTableBuilder.Prepare(tree);
+            symbolTableBuilder.DebugPrintSymbolTable();
 
             var interpreter = new Interpreter();
             interpreter.Run(tree);
-
-            interpreter.DebugPrintGlobalScope();
-            symbolTableBuilder.DebugPrintSymbolTable();
+            interpreter.DebugPrintGlobalScope();       
         }
     }
 }

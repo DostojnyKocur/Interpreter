@@ -1,4 +1,6 @@
-﻿namespace Interpreter.AST
+﻿using Interpreter.Tokens;
+
+namespace Interpreter.AST
 {
     public class ASTBinaryOperator : ASTNode
     {

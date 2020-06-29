@@ -1,4 +1,7 @@
-﻿namespace Interpreter.AST
+﻿using Interpreter.Extensions;
+using Interpreter.Tokens;
+
+namespace Interpreter.AST
 {
     public class ASTNumber : ASTNode
     {

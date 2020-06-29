@@ -1,4 +1,4 @@
-﻿namespace Interpreter
+﻿namespace Interpreter.Extensions
 {
     public static class StringExtensions
     {

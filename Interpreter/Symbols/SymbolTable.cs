@@ -12,10 +12,10 @@ namespace Interpreter.Symbols
 
         public void DebugPrintSymbols()
         {
-            Console.WriteLine("==== SYMBOL TABLE ====");
+            Console.WriteLine("\r\n==== SYMBOL TABLE ====");
             foreach (var entry in _symbols)
             {
-                Console.WriteLine($"{entry.Key}\t:{entry.Value}");
+                Console.WriteLine("{0, 20}\t:{1, 25}", entry.Key.Trim(), entry.Value);
             }
             Console.WriteLine("==== ==== ====");
         }
