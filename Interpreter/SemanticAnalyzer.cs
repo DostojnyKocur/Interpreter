@@ -6,11 +6,12 @@ namespace Interpreter
 {
     public class SemanticAnalyzer
     {
-        private readonly SymbolTable _symbolTable = new SymbolTable();
+        private readonly ScopedSymbolTable _globalScope = new ScopedSymbolTable("global", 1);
+        private ScopedSymbolTable _currentScope;
 
         public void DebugPrintSymbolTable()
         {
-            _symbolTable.DebugPrintSymbols();
+            _currentScope.DebugPrintSymbols();
         }
 
         public void Prepare(ASTNode node)
@@ -55,9 +56,6 @@ namespace Interpreter
                 case ASTFunctionDefinition functionDefinition:
                     VisitFunctionDefinition(functionDefinition);
                     break;
-                case ASTArgumentList argumentList:
-                    VisitArgumentList(argumentList);
-                    break;
                 default:
                     throw new ArgumentException($"[{nameof(SemanticAnalyzer)}] No visit method for node type {node.GetType()}");
             }
@@ -75,7 +73,16 @@ namespace Interpreter
 
         private void VisitProgram(ASTProgram node)
         {
+            Console.WriteLine("Enter scope : global");
+            _currentScope = _globalScope;
+
             Visit(node.Root);
+
+            DebugPrintSymbolTable();
+
+            _currentScope = _currentScope.EnclosingScope;
+
+            Console.WriteLine("Leave scope : global");
         }
 
         private void VisitCompound(ASTCompound node)
@@ -108,12 +115,12 @@ namespace Interpreter
         private void VisitVariableDeclaration(ASTVariableDeclaration node)
         {
             var typeName = node.Type.Name;
-            var typeSymbol = _symbolTable.Lookup(typeName);
+            var typeSymbol = _currentScope.Lookup(typeName);
 
             var variableName = node.Variable.Name;
             var variableSymbol = new SymbolVariable(variableName, typeSymbol);
 
-            _symbolTable.Define(variableSymbol);
+            _currentScope.Define(variableSymbol);
         }
 
         private void VisitAssign(ASTAssign node)
@@ -136,29 +143,39 @@ namespace Interpreter
         private void VisitVariable(ASTVariable node)
         {
             var variableName = node.Name;
-            var variableSymbol = _symbolTable.Lookup(variableName);
+            var variableSymbol = _currentScope.Lookup(variableName);
         }
 
         private void VisitFunctionDefinition(ASTFunctionDefinition node)
         {
             var typeName = node.ReturnType.Name;
-            var typeSymbol = _symbolTable.Lookup(typeName);
+            var typeSymbol = _currentScope.Lookup(typeName);
 
             var functionName = node.Name.Value;
-            var functionSymbol = new SymbolVariable(functionName, typeSymbol);
+            var functionSymbol = new SymbolFunction(functionName, typeSymbol);
 
-            _symbolTable.Define(functionSymbol);
+            _currentScope.Define(functionSymbol);
 
-            Visit(node.Arguments);
-            Visit(node.Body);
-        }
+            Console.WriteLine($"Enter scope : {functionName}");
+            var functionScope = new ScopedSymbolTable(functionName, _currentScope.Level + 1, _currentScope) ;
 
-        private void VisitArgumentList(ASTArgumentList node)
-        {
-            foreach(var argument in node.Arguments)
+            _currentScope = functionScope;
+
+            foreach(var param in node.Parameters)
             {
-                Visit(argument);
+                var paramName = param.Variable.Name;
+                var paramType = _currentScope.Lookup(param.Type.Name);
+                var paramSymbol = new SymbolVariable(paramName, paramType);
+                _currentScope.Define(paramSymbol);
+                functionSymbol.Parameters.Add(paramSymbol);
             }
+
+            Visit(node.Body);
+
+            DebugPrintSymbolTable();
+
+            _currentScope = _currentScope.EnclosingScope;
+            Console.WriteLine($"Leave scope : {functionName}");
         }
     }
 }

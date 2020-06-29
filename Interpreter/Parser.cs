@@ -205,39 +205,35 @@ namespace Interpreter
 
         private ASTFunctionDefinition FunctionDefinition(ASTType returnType, Token name)
         {
-            var argumentList = ArgumentList();
+            var argumentList = ParameterList();
             var body = CompoundStatement();
             return new ASTFunctionDefinition(returnType, name, argumentList, body);
         }
 
-        private ASTArgumentList ArgumentList()
+        private List<ASTParam> ParameterList()
         {
             Eat(TokenType.LeftParen);
 
-            var arguments = new List<(ASTType type, ASTVariable name)>();
+            var parameters = new List<ASTParam>();
+
             if (_currentToken.Type == TokenType.TypeNumber)
             {
-                var param = (Type(), Variable());
-                arguments.Add(param);
+                var param = new ASTParam(Type(), Variable());
+
+                parameters.Add(param);
 
                 while (_currentToken.Type == TokenType.Comma)
                 {
                     Eat(TokenType.Comma);
-                    var anotherParam = (Type(), Variable());
-                    arguments.Add(anotherParam);
+
+                    var anotherParam = new ASTParam(Type(), Variable());
+                    parameters.Add(anotherParam);
                 }
             }
 
             Eat(TokenType.RightParen);
 
-            var result = new List<ASTVariableDeclaration>();
-
-            foreach (var argument in arguments)
-            {
-                result.Add(new ASTVariableDeclaration(argument.name, argument.type));
-            }
-
-            return new ASTArgumentList(result);
+            return parameters;
         }
 
         private ASTVariablesDeclarations VariablesDeclarations(ASTType type = null, ASTVariable firstVariable = null)

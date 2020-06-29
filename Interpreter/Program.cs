@@ -71,7 +71,6 @@ namespace Interpreter
 
             var semanticAnalyzer = new SemanticAnalyzer();
             semanticAnalyzer.Prepare(tree);
-            semanticAnalyzer.DebugPrintSymbolTable();
 
             var interpreter = new Interpreter();
             interpreter.Run(tree);

@@ -13,4 +13,9 @@
 	{
 		number res = param1 * 3 + param2;
 	}
+	
+	number SecondFunction(number param3)
+	{
+		number tt = a;
+	}
 }

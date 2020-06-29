@@ -7,12 +7,12 @@ namespace Interpreter
 {
     public class Interpreter
     {
-        private readonly Dictionary<string, object> _globalScope = new Dictionary<string, object>();
+        private readonly Dictionary<string, object> _globalMemory = new Dictionary<string, object>();
 
         public void DebugPrintGlobalScope()
         {
-            Console.WriteLine("\r\n==== GLOBAL SCOPE ====");
-            foreach (var entry in _globalScope)
+            Console.WriteLine("\r\n==== GLOBAL Memory ====");
+            foreach (var entry in _globalMemory)
             {
                 Console.WriteLine("{0, 20}\t:{1, 25}", entry.Key.Trim(), entry.Value);
             }
@@ -72,13 +72,13 @@ namespace Interpreter
             switch (node.Left)
             {
                 case ASTVariable variable:
-                    _globalScope[variable.Name] = value;
+                    _globalMemory[variable.Name] = value;
                     return;
                 case ASTVariablesDeclarations variablesDeclarations:
                     Visit(variablesDeclarations);
                     foreach (var variable in variablesDeclarations.Children)
                     {
-                        _globalScope[variable.Variable.Name] = value;
+                        _globalMemory[variable.Variable.Name] = value;
                     }
                     return;
             }
@@ -90,12 +90,12 @@ namespace Interpreter
         {
             var variableName = node.Name;
 
-            if (!_globalScope.ContainsKey(variableName))
+            if (!_globalMemory.ContainsKey(variableName))
             {
                 throw new NullReferenceException($"Variable {variableName} not found");
             }
 
-            return _globalScope[variableName];
+            return _globalMemory[variableName];
         }
 
         private double VisitNumber(ASTNumber node)
@@ -125,9 +125,9 @@ namespace Interpreter
         {
             var variableName = node.Variable.Name;
 
-            if (!_globalScope.ContainsKey(variableName))
+            if (!_globalMemory.ContainsKey(variableName))
             {
-                _globalScope.Add(variableName, 0);
+                _globalMemory.Add(variableName, 0);
             }
         }
 
