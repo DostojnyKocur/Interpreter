@@ -21,39 +21,36 @@ namespace Interpreter.Symbols
 
         public void DebugPrintSymbols()
         {
+            Logger.DebugScope(Environment.NewLine);
             var enclosingScopeName = EnclosingScope != null ? EnclosingScope.Name : "none";
-            Console.WriteLine($"\r\n==== SYMBOL TABLE ({Name} : level {Level} : enclosing scope : {enclosingScopeName}) ====");
+            Logger.DebugScope($"==== SYMBOL TABLE ({Name} : level {Level} : enclosing scope : {enclosingScopeName}) ====");
             foreach (var entry in _symbols)
             {
-                Console.WriteLine("{0, 20}\t:{1, 25}", entry.Key.Trim(), entry.Value);
+                Logger.DebugScope(string.Format("{0, 20}\t:{1, 25}", entry.Key.Trim(), entry.Value));
             }
-            Console.WriteLine("==== ==== ====");
+            Logger.DebugScope("==== ==== ====");
         }
 
         public void Define(Symbol symbol)
         {
-            Console.WriteLine($"Define symbol: {symbol}");
-            if (_symbols.ContainsKey(symbol.Name))
-            {
-                throw new ArgumentException($"Symbol {symbol.Name} already defined");
-            }
+            Logger.DebugScope($"Define symbol: {symbol}");
 
             _symbols.Add(symbol.Name, symbol);
         }
 
-        public Symbol Lookup(string symbolName)
+        public Symbol Lookup(string symbolName, bool onlyCurrentScope = false)
         {
-            Console.WriteLine($"Lookup symbol: {symbolName} (scope {Name})");
+            Logger.DebugScope($"Lookup symbol: {symbolName} (scope {Name})");
             if (_symbols.ContainsKey(symbolName))
             {
                 return _symbols[symbolName];
             }
-            else if (EnclosingScope != null)
+            else if (EnclosingScope != null && !onlyCurrentScope)
             {
                 return EnclosingScope.Lookup(symbolName);
             }
 
-            throw new NullReferenceException($"Symbol {symbolName} not found");
+            return null;
         }
     }
 }

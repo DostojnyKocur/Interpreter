@@ -1,6 +1,8 @@
 ﻿using System;
 using Interpreter.AST;
+using Interpreter.Errors;
 using Interpreter.Symbols;
+using Interpreter.Tokens;
 
 namespace Interpreter
 {
@@ -73,7 +75,7 @@ namespace Interpreter
 
         private void VisitProgram(ASTProgram node)
         {
-            Console.WriteLine("Enter scope : global");
+            Logger.DebugScope("Enter scope : global");
             _currentScope = _globalScope;
 
             Visit(node.Root);
@@ -82,7 +84,7 @@ namespace Interpreter
 
             _currentScope = _currentScope.EnclosingScope;
 
-            Console.WriteLine("Leave scope : global");
+            Logger.DebugScope("Leave scope : global");
         }
 
         private void VisitCompound(ASTCompound node)
@@ -120,6 +122,11 @@ namespace Interpreter
             var variableName = node.Variable.Name;
             var variableSymbol = new SymbolVariable(variableName, typeSymbol);
 
+            if(_currentScope.Lookup(variableName, true) != null)
+            {
+                ThrowSemanticException(ErrorCode.DuplicateIdentifier, node.Variable.Token);
+            }
+
             _currentScope.Define(variableSymbol);
         }
 
@@ -144,6 +151,10 @@ namespace Interpreter
         {
             var variableName = node.Name;
             var variableSymbol = _currentScope.Lookup(variableName);
+            if(variableSymbol is null)
+            {
+                ThrowSemanticException(ErrorCode.IdentifierNotFound, node.Token);
+            }
         }
 
         private void VisitFunctionDefinition(ASTFunctionDefinition node)
@@ -154,9 +165,14 @@ namespace Interpreter
             var functionName = node.Name.Value;
             var functionSymbol = new SymbolFunction(functionName, typeSymbol);
 
+            if (_currentScope.Lookup(functionName, true) != null)
+            {
+                ThrowSemanticException(ErrorCode.DuplicateIdentifier, node.Name);
+            }
+
             _currentScope.Define(functionSymbol);
 
-            Console.WriteLine($"Enter scope : {functionName}");
+            Logger.DebugScope($"Enter scope : {functionName}");
             var functionScope = new ScopedSymbolTable(functionName, _currentScope.Level + 1, _currentScope) ;
 
             _currentScope = functionScope;
@@ -166,7 +182,13 @@ namespace Interpreter
                 var paramName = param.Variable.Name;
                 var paramType = _currentScope.Lookup(param.Type.Name);
                 var paramSymbol = new SymbolVariable(paramName, paramType);
+
+                if (_currentScope.Lookup(paramName, true) != null)
+                {
+                    ThrowSemanticException(ErrorCode.DuplicateIdentifier, param.Variable.Token);
+                }
                 _currentScope.Define(paramSymbol);
+
                 functionSymbol.Parameters.Add(paramSymbol);
             }
 
@@ -175,7 +197,13 @@ namespace Interpreter
             DebugPrintSymbolTable();
 
             _currentScope = _currentScope.EnclosingScope;
-            Console.WriteLine($"Leave scope : {functionName}");
+            Logger.DebugScope($"Leave scope : {functionName}");
+        }
+
+        private void ThrowSemanticException(ErrorCode errorCode, Token token)
+        {
+            var message = $"{ErrorCodes.StringRepresentatnion[errorCode]} -> {token}";
+            throw new SemanticError(errorCode, token, message);
         }
     }
 }

@@ -11,12 +11,13 @@ namespace Interpreter
 
         public void DebugPrintGlobalScope()
         {
-            Console.WriteLine("\r\n==== GLOBAL Memory ====");
+            Logger.DebugMemory(Environment.NewLine);
+            Logger.DebugMemory("==== GLOBAL Memory ====");
             foreach (var entry in _globalMemory)
             {
-                Console.WriteLine("{0, 20}\t:{1, 25}", entry.Key.Trim(), entry.Value);
+                Logger.DebugMemory(string.Format("{0, 20}\t:{1, 25}", entry.Key.Trim(), entry.Value));
             }
-            Console.WriteLine("==== ==== ====");
+            Logger.DebugMemory("==== ==== ====");
         }
 
         public void Run(ASTNode tree)

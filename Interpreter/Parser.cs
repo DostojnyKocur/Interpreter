@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Interpreter.AST;
+using Interpreter.Errors;
 using Interpreter.Tokens;
 
 namespace Interpreter
@@ -25,7 +26,7 @@ namespace Interpreter
             var node = Program();
             if(_currentToken.Type != TokenType.EOF)
             {
-                ThrowParsingException();
+                ThrowParsingException(ErrorCode.UnexpectedToken, _currentToken);
             }
 
             return node;
@@ -57,7 +58,7 @@ namespace Interpreter
 
             if (_currentToken.Type == TokenType.Id)
             {
-                ThrowParsingException();
+                ThrowParsingException(ErrorCode.UnexpectedToken, _currentToken);
             }
 
             return results;
@@ -113,7 +114,7 @@ namespace Interpreter
                 return FunctionDefinition(type, idToken);
             }
 
-            ThrowParsingException();
+            ThrowParsingException(ErrorCode.UnexpectedToken, _currentToken);
             return null;
         }
 
@@ -286,13 +287,14 @@ namespace Interpreter
             }
             else
             {
-                ThrowParsingException();
+                ThrowParsingException(ErrorCode.UnexpectedToken, _currentToken);
             }
         }
 
-        private void ThrowParsingException()
+        private void ThrowParsingException(ErrorCode errorCode, Token token)
         {
-            throw new InvalidOperationException("Error parsing input");
+            var message = $"{ErrorCodes.StringRepresentatnion[errorCode]} -> {token}";
+            throw new ParserError(errorCode, token, message);
         }
     }
 }

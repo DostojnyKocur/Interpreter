@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Interpreter.Errors;
 using Interpreter.Tokens;
 
 namespace Interpreter
@@ -14,6 +14,8 @@ namespace Interpreter
         private string _text = string.Empty;
         private int _position = 0;
         private char _currentChar = char.MinValue;
+        private uint _lineNumber = 1;
+        private uint _column = 1;
 
         public Lexer(string text) => (_text, _currentChar) = (text, text[_position]);
 
@@ -37,62 +39,43 @@ namespace Interpreter
                     return GetId();
                 }
 
-                switch (_currentChar)
+                if(_currentChar == '/')
                 {
-                    case '+':
+                    if (Peek() == '*')
+                    {
+                        SkipComment();
+                        continue;
+                    }
+                    else
+                    {
                         Advance();
-                        return new Token(TokenType.Plus);
-                    case '-':
-                        Advance();
-                        return new Token(TokenType.Minus);
-                    case '*':
-                        Advance();
-                        return new Token(TokenType.Multiplication);
-                    case '/':
-                        if (Peek() == '*')
-                        {
-                            SkipComment();
-                            continue;
-                        }
-                        else
-                        {
-                            Advance();
-                            return new Token(TokenType.Divide);
-                        }
-                    case '%':
-                        Advance();
-                        return new Token(TokenType.Modulo);
-                    case '(':
-                        Advance();
-                        return new Token(TokenType.LeftParen);
-                    case ')':
-                        Advance();
-                        return new Token(TokenType.RightParen);
-                    case '{':
-                        Advance();
-                        return new Token(TokenType.ScopeBegin);
-                    case '}':
-                        Advance();
-                        return new Token(TokenType.ScopeEnd);
-                    case '=':
-                        Advance();
-                        return new Token(TokenType.Assign);
-                    case ';':
-                        Advance();
-                        return new Token(TokenType.Semicolon);
-                    case ',':
-                        Advance();
-                        return new Token(TokenType.Comma);
+                        return new Token(TokenType.Divide, null, _lineNumber, _column);
+                    }
                 }
-
-                throw new InvalidOperationException("Error parsing input");
+                else
+                {
+                    var tokenType = TokenTypes.GetForChar(_currentChar);
+                    Advance();
+                    if (tokenType is null)
+                    {
+                        var message = $"Lexer error on '{_currentChar}' line: {_lineNumber} column: {_column}";
+                        throw new LexerError(message: message);
+                    }
+                    return new Token((TokenType)tokenType, null, _lineNumber, _column);
+                }
             }
 
-            return new Token(TokenType.EOF);
+            return new Token(TokenType.EOF, null, _lineNumber, _column);
         }
 
         private void Advance()
         {
+            if(_currentChar == '\n')
+            {
+                _lineNumber += 1;
+                _column = 0;
+            }
+
             _position += 1;
 
             if (_position > _text.Length - 1)
@@ -102,6 +85,7 @@ namespace Interpreter
             else
             {
                 _currentChar = _text[_position];
+                _column += 1;
             }
         }
 
@@ -153,7 +137,7 @@ namespace Interpreter
                 return ReserverKeywords[result];
             }
 
-            return new Token(TokenType.Id, result);
+            return new Token(TokenType.Id, result, _lineNumber, _column);
         }
 
         private Token GetNumber()
@@ -166,7 +150,7 @@ namespace Interpreter
                 Advance();
             }
 
-            return new Token(TokenType.ConstNumber, result);
+            return new Token(TokenType.ConstNumber, result, _lineNumber, _column);
         }
     }
 }

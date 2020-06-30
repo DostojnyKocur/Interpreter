@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using Interpreter.Symbols;
 
 namespace Interpreter
 {
@@ -8,13 +7,11 @@ namespace Interpreter
     {
         static void Main(string[] args)
         {
-            if(args.Length == 1)
+            Logger.CreateLogger(args);
+
+            if (args.Length > 0)
             {
                 InterpretFile(args[0]);
-            }
-            else
-            {
-                InteractiveMode();
             }
         }
 
@@ -29,36 +26,6 @@ namespace Interpreter
             else
             {
                 Console.WriteLine($"File {file} does not exist. Exiting...");
-            }
-        }
-
-        private static void InteractiveMode()
-        {
-            Console.WriteLine("To exit type 'exit' or 'quit'");
-
-            while (true)
-            {
-                try
-                {
-                    Console.Write("interpreter> ");
-                    var text = Console.ReadLine();
-
-                    if (string.IsNullOrWhiteSpace(text))
-                    {
-                        continue;
-                    }
-
-                    if (text.Length == 4 && (text.ToLower() == "exit" || text.ToLower() == "quit"))
-                    {
-                        break;
-                    }
-
-                    Process(text);
-                }
-                catch (Exception exception)
-                {
-                    Console.WriteLine($"Exception: {exception.Message}");
-                }
             }
         }
 
