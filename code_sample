@@ -18,4 +18,11 @@
 	{
 		number tt = a;
 	}
+	
+	number ThirdFunction()
+	{
+	}
+	
+	ThirdFunction();
+	TestFunction(7, 34 - 2);
 }

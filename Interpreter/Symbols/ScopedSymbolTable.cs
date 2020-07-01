@@ -26,7 +26,7 @@ namespace Interpreter.Symbols
             Logger.DebugScope($"==== SYMBOL TABLE ({Name} : level {Level} : enclosing scope : {enclosingScopeName}) ====");
             foreach (var entry in _symbols)
             {
-                Logger.DebugScope(string.Format("{0, 20}\t:{1, 25}", entry.Key.Trim(), entry.Value));
+                Logger.DebugScope(string.Format("{0, 20}\t:\t{1, -30}", entry.Key.Trim(), entry.Value));
             }
             Logger.DebugScope("==== ==== ====");
         }

@@ -58,6 +58,9 @@ namespace Interpreter
                 case ASTFunctionDefinition functionDefinition:
                     VisitFunctionDefinition(functionDefinition);
                     break;
+                case ASTFunctionCall functionCall:
+                    VisitFunctionCall(functionCall);
+                    break;
                 default:
                     throw new ArgumentException($"[{nameof(SemanticAnalyzer)}] No visit method for node type {node.GetType()}");
             }
@@ -198,6 +201,14 @@ namespace Interpreter
 
             _currentScope = _currentScope.EnclosingScope;
             Logger.DebugScope($"Leave scope : {functionName}");
+        }
+
+        private void VisitFunctionCall(ASTFunctionCall functionCall)
+        {
+            foreach(var param in functionCall.ActualParameters)
+            {
+                Visit(param);
+            }
         }
 
         private void ThrowSemanticException(ErrorCode errorCode, Token token)

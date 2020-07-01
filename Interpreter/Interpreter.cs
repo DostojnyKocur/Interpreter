@@ -15,7 +15,7 @@ namespace Interpreter
             Logger.DebugMemory("==== GLOBAL Memory ====");
             foreach (var entry in _globalMemory)
             {
-                Logger.DebugMemory(string.Format("{0, 20}\t:{1, 25}", entry.Key.Trim(), entry.Value));
+                Logger.DebugMemory(string.Format("{0, 20}\t:\t{1, -30}", entry.Key.Trim(), entry.Value));
             }
             Logger.DebugMemory("==== ==== ====");
         }
@@ -61,6 +61,8 @@ namespace Interpreter
                 case ASTFunctionDefinition functionDefinition:
                     VisitFunctionDefinition(functionDefinition);
                     return null;
+                case ASTFunctionCall functionCall:
+                    return VisitFunctionCall(functionCall);
             }
 
             throw new ArgumentException($"[{nameof(Interpreter)}] No visit method for node type {node.GetType()}");
@@ -135,6 +137,11 @@ namespace Interpreter
         private void VisitFunctionDefinition(ASTFunctionDefinition node)
         {
             return;
+        }
+
+        private dynamic VisitFunctionCall(ASTFunctionCall functionCall)
+        {
+            return null;
         }
 
         private void VisitCompound(ASTCompound node)

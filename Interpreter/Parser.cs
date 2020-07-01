@@ -71,13 +71,30 @@ namespace Interpreter
                 case TokenType.ScopeBegin:
                     return CompoundStatement();
                 case TokenType.Id:
-                    var assignmentStatement = AssignmentStatement();
-                    Eat(TokenType.Semicolon);
-                    return assignmentStatement;
+                    return StatementAssignmentFunctionCall();
                 case TokenType.TypeNumber:
                     return StatementDeclarationsDefinitionsAssignments();
                 default:
                     return Empty();
+            }
+        }
+
+        private ASTNode StatementAssignmentFunctionCall()
+        {
+            var idToken = _currentToken;
+            Eat(TokenType.Id);
+            if (_currentToken.Type == TokenType.LeftParen)
+            {
+                var functionCall = FunctionCall(idToken);
+                Eat(TokenType.Semicolon);
+                return functionCall;
+            }
+            else
+            {
+                var variable = new ASTVariable(idToken);
+                var assignmentStatement = AssignmentStatement(variable);
+                Eat(TokenType.Semicolon);
+                return assignmentStatement;
             }
         }
 
@@ -235,6 +252,32 @@ namespace Interpreter
             Eat(TokenType.RightParen);
 
             return parameters;
+        }
+
+        private ASTFunctionCall FunctionCall(Token idToken)
+        {
+            var functionName = idToken.Value;
+
+            var actualParameters = new List<ASTNode>();
+
+            Eat(TokenType.LeftParen);
+
+            if(_currentToken.Type != TokenType.RightParen)
+            {
+                var node = Expression();
+                actualParameters.Add(node);
+
+                while(_currentToken.Type == TokenType.Comma)
+                {
+                    Eat(TokenType.Comma);
+                    var anotherParam = Expression();
+                    actualParameters.Add(anotherParam);
+                }
+            }
+
+            Eat(TokenType.RightParen);
+
+            return new ASTFunctionCall(functionName, actualParameters, idToken);
         }
 
         private ASTVariablesDeclarations VariablesDeclarations(ASTType type = null, ASTVariable firstVariable = null)
