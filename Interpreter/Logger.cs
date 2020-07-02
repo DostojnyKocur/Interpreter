@@ -22,6 +22,11 @@ namespace Interpreter
             .CreateLogger();
         }
 
+        public static void Debug(string message)
+        {
+            Log.Logger.Debug(message);
+        }
+
         public static void DebugScope(string message)
         {
             if (LogScope)

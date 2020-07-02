@@ -40,8 +40,7 @@ namespace Interpreter
             semanticAnalyzer.Prepare(tree);
 
             var interpreter = new Interpreter();
-            interpreter.Run(tree);
-            interpreter.DebugPrintGlobalScope();       
+            interpreter.Run(tree);  
         }
     }
 }

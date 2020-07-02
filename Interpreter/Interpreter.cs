@@ -1,24 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using Interpreter.AST;
+using Interpreter.Memory;
 using Interpreter.Tokens;
 
 namespace Interpreter
 {
     public class Interpreter
     {
-        private readonly Dictionary<string, object> _globalMemory = new Dictionary<string, object>();
-
-        public void DebugPrintGlobalScope()
-        {
-            Logger.DebugMemory(Environment.NewLine);
-            Logger.DebugMemory("==== GLOBAL Memory ====");
-            foreach (var entry in _globalMemory)
-            {
-                Logger.DebugMemory(string.Format("{0, 20}\t:\t{1, -30}", entry.Key.Trim(), entry.Value));
-            }
-            Logger.DebugMemory("==== ==== ====");
-        }
+        private readonly CallStack _callStack = new CallStack();
 
         public void Run(ASTNode tree)
         {
@@ -33,7 +22,7 @@ namespace Interpreter
                     VisitEmpty(empty);
                     return null;
                 case ASTProgram program:
-                    Visit(program.Root);
+                    VisitProgram(program);
                     return null;
                 case ASTType type:
                     VisitType(type);
@@ -68,6 +57,22 @@ namespace Interpreter
             throw new ArgumentException($"[{nameof(Interpreter)}] No visit method for node type {node.GetType()}");
         }
 
+        private void VisitProgram(ASTProgram program)
+        {
+            Logger.Debug("Enter program");
+            var activationRecord = new ActivationRecord("program", ActivationRecordType.Program, 1);
+            _callStack.Push(activationRecord);
+
+            Logger.DebugMemory(_callStack.ToString());
+
+            Visit(program.Root);
+
+            Logger.DebugMemory("Leave program");
+            Logger.DebugMemory(_callStack.ToString());
+
+            _callStack.Pop();
+        }
+
         private void VisitAssign(ASTAssign node)
         {
             var value = Visit(node.Right);
@@ -75,13 +80,13 @@ namespace Interpreter
             switch (node.Left)
             {
                 case ASTVariable variable:
-                    _globalMemory[variable.Name] = value;
+                    _callStack.Top[variable.Name] = value;
                     return;
                 case ASTVariablesDeclarations variablesDeclarations:
                     Visit(variablesDeclarations);
                     foreach (var variable in variablesDeclarations.Children)
                     {
-                        _globalMemory[variable.Variable.Name] = value;
+                        _callStack.Top[variable.Variable.Name] = value;
                     }
                     return;
             }
@@ -92,13 +97,7 @@ namespace Interpreter
         private object VisitVariable(ASTVariable node)
         {
             var variableName = node.Name;
-
-            if (!_globalMemory.ContainsKey(variableName))
-            {
-                throw new NullReferenceException($"Variable {variableName} not found");
-            }
-
-            return _globalMemory[variableName];
+            return _callStack.Top[variableName];
         }
 
         private double VisitNumber(ASTNumber node)
@@ -127,11 +126,7 @@ namespace Interpreter
         private void VisitVariableDeclaration(ASTVariableDeclaration node)
         {
             var variableName = node.Variable.Name;
-
-            if (!_globalMemory.ContainsKey(variableName))
-            {
-                _globalMemory.Add(variableName, 0);
-            }
+            _callStack.Top[variableName] = 0;
         }
 
         private void VisitFunctionDefinition(ASTFunctionDefinition node)
