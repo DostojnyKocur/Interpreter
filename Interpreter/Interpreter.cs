@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Interpreter.AST;
 using Interpreter.Memory;
 using Interpreter.Tokens;
@@ -59,13 +60,17 @@ namespace Interpreter
 
         private void VisitProgram(ASTProgram program)
         {
-            Logger.Debug("Enter program");
-            var activationRecord = new ActivationRecord("program", ActivationRecordType.Program, 1);
+            Logger.Debug("Enter Main");
+            var activationRecord = new ActivationRecord("Main", ActivationRecordType.Program, 1);
             _callStack.Push(activationRecord);
 
-            Visit(program.Root);
+            var runParameters = new List<ASTNode>();
+            var mainFunction = new ASTFunctionCall("Main", runParameters, program.Token);
+            mainFunction.SymbolFunction = program.MainFunction;
 
-            Logger.DebugMemory("Leave program");
+            Visit(mainFunction);
+
+            Logger.DebugMemory("Leave Main");
             Logger.DebugMemory(_callStack.ToString());
 
             _callStack.Pop();

@@ -1,3 +1,4 @@
+number Main()
 {
 	number TestFunction(number param1, number param2)
 	{

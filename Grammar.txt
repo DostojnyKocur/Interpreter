@@ -1,8 +1,11 @@
 program						:	statement
 compound_statement			:	SCOPEBEGIN statement_list SCOPEEND
-statement_list				:	statement | statement SEMI statement_list
-statement					:	compound_statement | assignment_statement SEMI | variables_declarations SEMI | function_definition | function_call SEMI | empty
+statement_list				:	statement | statement statement_list
+statement					:	compound_statement | assignment_statement SEMI | variables_declarations | function_definition | function_call SEMI | return_statement SEMI | while_statement | if_statement | empty
 assignment_statement		:	variable ASSIGN expression | variables_declarations ASSIGN expression
+return_statement			:	RETURN expression 
+while_statement				:	WHILE expression compound_statement
+if_statement				:	IF expression compound_statement (ELSE compound_statement)?
 expression					:	term ((PLUS | MINUS) term)*
 term						:	factor ((MUL | DIV | MOD) factor)*
 factor						:	(PLUS | MINUS) factor | NUMBER_CONST | LPAREN expression RPAREN | function_call

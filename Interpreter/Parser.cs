@@ -34,7 +34,8 @@ namespace Interpreter
 
         private ASTProgram Program()
         {
-            return new ASTProgram(Statement());
+            var token = _currentToken;
+            return new ASTProgram(Statement(), token);
         }
 
         private ASTCompound CompoundStatement()

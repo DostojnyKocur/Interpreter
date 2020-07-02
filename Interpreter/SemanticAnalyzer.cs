@@ -83,6 +83,14 @@ namespace Interpreter
 
             Visit(node.Root);
 
+            var mainFunction = _currentScope.Lookup("Main", true);
+            if(mainFunction == null)
+            {
+                ThrowSemanticException(ErrorCode.MissingMain, node.Token);
+            }
+
+            node.MainFunction = mainFunction as SymbolFunction;
+
             DebugPrintSymbolTable();
 
             _currentScope = _currentScope.EnclosingScope;
