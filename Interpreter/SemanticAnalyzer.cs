@@ -197,6 +197,8 @@ namespace Interpreter
 
             Visit(node.Body);
 
+            functionSymbol.Body = node.Body;
+
             DebugPrintSymbolTable();
 
             _currentScope = _currentScope.EnclosingScope;
@@ -218,6 +220,8 @@ namespace Interpreter
             {
                 Visit(param);
             }
+
+            functionCall.SymbolFunction = (functionSymbol as SymbolFunction);
         }
 
         private void ThrowSemanticException(ErrorCode errorCode, Token token)

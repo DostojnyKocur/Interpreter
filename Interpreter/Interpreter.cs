@@ -63,8 +63,6 @@ namespace Interpreter
             var activationRecord = new ActivationRecord("program", ActivationRecordType.Program, 1);
             _callStack.Push(activationRecord);
 
-            Logger.DebugMemory(_callStack.ToString());
-
             Visit(program.Root);
 
             Logger.DebugMemory("Leave program");
@@ -136,6 +134,28 @@ namespace Interpreter
 
         private dynamic VisitFunctionCall(ASTFunctionCall functionCall)
         {
+            var functionName = functionCall.FunctionName;
+            var activationRecord = new ActivationRecord(functionName, ActivationRecordType.Function, _callStack.Top.Level + 1);
+
+            var symbolFunction = functionCall.SymbolFunction;
+            var formalParameters = symbolFunction.Parameters;
+            var actualParameters = functionCall.ActualParameters;
+
+            for(int i = 0; i < formalParameters.Count; ++i)
+            {
+                activationRecord[formalParameters[i].Name] = Visit(actualParameters[i]);
+            }
+
+            Logger.Debug($"Enter {functionName}");
+            _callStack.Push(activationRecord);
+
+            Visit(symbolFunction.Body);
+
+            Logger.DebugMemory($"Leave {functionName}");
+            Logger.DebugMemory(_callStack.ToString());
+
+            _callStack.Pop();
+
             return null;
         }
 

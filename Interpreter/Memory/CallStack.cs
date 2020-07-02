@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace Interpreter.Memory
@@ -25,7 +24,7 @@ namespace Interpreter.Memory
         {
             var stringBuilder = new StringBuilder("==== CALL STACK ====");
             stringBuilder.Append(Environment.NewLine);
-            foreach (var record in _stack.ToArray().Reverse())
+            foreach (var record in _stack.ToArray())
             {
                 stringBuilder.Append(record);
                 stringBuilder.Append(Environment.NewLine);

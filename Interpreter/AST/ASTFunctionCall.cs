@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Interpreter.Symbols;
 using Interpreter.Tokens;
 
 namespace Interpreter.AST
@@ -15,5 +16,6 @@ namespace Interpreter.AST
         public string FunctionName { get; }
         public List<ASTNode> ActualParameters { get; } = new List<ASTNode>();
         public Token Token { get; }
+        public SymbolFunction SymbolFunction { get; set; }
     }
 }

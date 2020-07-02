@@ -2,6 +2,7 @@
 {
     public enum ActivationRecordType
     {
-        Program
+        Program,
+        Function
     }
 }
