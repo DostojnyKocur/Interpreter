@@ -135,13 +135,13 @@ namespace Interpreter
         private dynamic VisitFunctionCall(ASTFunctionCall functionCall)
         {
             var functionName = functionCall.FunctionName;
-            var activationRecord = new ActivationRecord(functionName, ActivationRecordType.Function, _callStack.Top.Level + 1);
-
             var symbolFunction = functionCall.SymbolFunction;
             var formalParameters = symbolFunction.Parameters;
             var actualParameters = functionCall.ActualParameters;
 
-            for(int i = 0; i < formalParameters.Count; ++i)
+            var activationRecord = new ActivationRecord(functionName, ActivationRecordType.Function, symbolFunction.ScopeLevel + 1);
+
+            for (int i = 0; i < formalParameters.Count; ++i)
             {
                 activationRecord[formalParameters[i].Name] = Visit(actualParameters[i]);
             }

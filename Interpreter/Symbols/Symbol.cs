@@ -6,6 +6,7 @@
 
         public string Name { get; }
         public Symbol Type { get; }
+        public uint ScopeLevel { get; set; }
 
         public override string ToString()
         {

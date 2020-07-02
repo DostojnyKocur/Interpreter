@@ -35,6 +35,7 @@ namespace Interpreter.Symbols
         {
             Logger.DebugScope($"Define symbol: {symbol}");
 
+            symbol.ScopeLevel = Level;
             _symbols.Add(symbol.Name, symbol);
         }
 

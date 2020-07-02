@@ -208,6 +208,12 @@ namespace Interpreter
         private void VisitFunctionCall(ASTFunctionCall functionCall)
         {
             var functionSymbol = _currentScope.Lookup(functionCall.FunctionName);
+
+            if (functionSymbol is null)
+            {
+                ThrowSemanticException(ErrorCode.IdentifierNotFound, functionCall.Token);
+            }
+
             var formalParameters = (functionSymbol as SymbolFunction).Parameters;
             var actualParameters = functionCall.ActualParameters;
 
