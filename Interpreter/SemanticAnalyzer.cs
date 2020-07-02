@@ -205,6 +205,15 @@ namespace Interpreter
 
         private void VisitFunctionCall(ASTFunctionCall functionCall)
         {
+            var functionSymbol = _currentScope.Lookup(functionCall.FunctionName);
+            var formalParameters = (functionSymbol as SymbolFunction).Parameters;
+            var actualParameters = functionCall.ActualParameters;
+
+            if(formalParameters.Count != actualParameters.Count)
+            {
+                ThrowSemanticException(ErrorCode.WrongParamNumber, functionCall.Token);
+            }
+
             foreach(var param in functionCall.ActualParameters)
             {
                 Visit(param);
