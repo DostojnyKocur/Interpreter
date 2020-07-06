@@ -8,7 +8,9 @@ namespace Interpreter.Errors
         UnexpectedToken,
         IdentifierNotFound,
         DuplicateIdentifier,
-        WrongParamNumber
+        WrongParamNumber,
+        MissingReturnStatement,
+        IncorrectType,
     }
 
     public static class ErrorCodes
@@ -19,7 +21,9 @@ namespace Interpreter.Errors
             { ErrorCode.UnexpectedToken, "Unexpected token" },
             { ErrorCode.IdentifierNotFound, "Identifier not found" },
             { ErrorCode.DuplicateIdentifier, "Duplicate identifier found" },
-            { ErrorCode.WrongParamNumber, "Wrong number of arguments" }
+            { ErrorCode.WrongParamNumber, "Wrong number of arguments" },
+            { ErrorCode.MissingReturnStatement, "Missing return statement" },
+            { ErrorCode.IncorrectType, "Incorrect type" }
         };
     }
 }

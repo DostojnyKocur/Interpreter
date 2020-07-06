@@ -8,9 +8,16 @@
 	{
 		return param1 + param2;
 	}
+	
+	void Procedure()
+	{
+		number t = 0;
+	}
 
 	number Main()
 	{
+		Procedure();
+	
 		number x = 2 * Add(3, Multiply(4, 2 * 6));
 		
 		return 0;

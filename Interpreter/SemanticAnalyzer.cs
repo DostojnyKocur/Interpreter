@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Interpreter.AST;
 using Interpreter.Errors;
 using Interpreter.Symbols;
@@ -207,6 +208,11 @@ namespace Interpreter
             }
 
             Visit(node.Body);
+
+            if(typeName != "void" && !node.Body.Children.Any(statement => statement.GetType() == typeof(ASTReturn)))
+            {
+                ThrowSemanticException(ErrorCode.MissingReturnStatement, node.Name);
+            }
 
             functionSymbol.Body = node.Body;
 

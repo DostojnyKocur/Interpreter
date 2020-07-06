@@ -7,6 +7,7 @@ namespace Interpreter.Symbols
     {
         private readonly Dictionary<string, Symbol> _symbols = new Dictionary<string, Symbol>
         {
+            { "void", new Symbol("void") },
             { "number", new Symbol("number") }
         };
 

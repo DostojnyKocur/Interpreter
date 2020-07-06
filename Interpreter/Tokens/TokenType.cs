@@ -5,6 +5,7 @@ namespace Interpreter.Tokens
     public enum TokenType
     {
         TypeNumber,
+        TypeVoid,
         ConstNumber,
 
         Plus,

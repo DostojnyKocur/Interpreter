@@ -306,6 +306,12 @@ namespace Interpreter
         private ASTVariablesDeclarations VariablesDeclarations(ASTType type = null, ASTVariable firstVariable = null)
         {
             var variableType = type ?? Type();
+
+            if(variableType.Name == "void")
+            {
+                ThrowParsingException(ErrorCode.IncorrectType, variableType.Token);
+            }
+
             var variables = new List<ASTVariable>();
 
             variables.Add(firstVariable ?? Variable());

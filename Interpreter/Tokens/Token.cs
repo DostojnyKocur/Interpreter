@@ -11,5 +11,10 @@
         public uint? Column { get; }
 
         public override string ToString() => $"Token({Type}, {Value}, position={LineNumber}:{Column})";
+
+        public Token Copy(uint lineNumber, uint column)
+        {
+            return new Token(Type, Value, lineNumber, column);
+        }
     }
 }

@@ -9,6 +9,7 @@ namespace Interpreter
         private static readonly Dictionary<string, Token> ReserverKeywords = new Dictionary<string, Token>
         {
             { "return",  new Token(TokenType.Return, "return") },
+            { "void",  new Token(TokenType.TypeNumber, "void") },
             { "number",  new Token(TokenType.TypeNumber, "number") }
         };
 
@@ -136,7 +137,7 @@ namespace Interpreter
 
             if (ReserverKeywords.ContainsKey(result))
             {
-                return ReserverKeywords[result];
+                return ReserverKeywords[result].Copy(_lineNumber, _column);
             }
 
             return new Token(TokenType.Id, result, _lineNumber, _column);
