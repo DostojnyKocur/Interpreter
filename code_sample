@@ -1,4 +1,3 @@
-number Main()
 {
 	number Multiply(number param1, number param2)
 	{
@@ -10,5 +9,10 @@ number Main()
 		return param1 + param2;
 	}
 
-	number x = 2 * Add(3, Multiply(4, 2 * 6));
+	number Main()
+	{
+		number x = 2 * Add(3, Multiply(4, 2 * 6));
+		
+		return 0;
+	}
 }

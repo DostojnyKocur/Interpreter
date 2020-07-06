@@ -23,8 +23,7 @@ namespace Interpreter
                     VisitEmpty(empty);
                     return null;
                 case ASTProgram program:
-                    VisitProgram(program);
-                    return null;
+                    return VisitProgram(program);
                 case ASTType type:
                     VisitType(type);
                     return null;
@@ -60,7 +59,7 @@ namespace Interpreter
             throw new ArgumentException($"[{nameof(Interpreter)}] No visit method for node type {node.GetType()}");
         }
 
-        private void VisitProgram(ASTProgram program)
+        private dynamic VisitProgram(ASTProgram program)
         {
             Logger.Debug("Enter Main");
             var activationRecord = new ActivationRecord("Main", ActivationRecordType.Program, 1);
@@ -70,12 +69,16 @@ namespace Interpreter
             var mainFunction = new ASTFunctionCall("Main", runParameters, program.Token);
             mainFunction.SymbolFunction = program.MainFunction;
 
-            Visit(mainFunction);
+            var result = Visit(mainFunction);
 
             Logger.DebugMemory("Leave Main");
             Logger.DebugMemory(_callStack.ToString());
 
             _callStack.Pop();
+
+            Logger.Debug($"Program exited with status code {result}");
+
+            return result;
         }
 
         private void VisitAssign(ASTAssign node)
