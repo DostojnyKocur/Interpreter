@@ -14,6 +14,7 @@ namespace Interpreter.Tokens
         Modulo,
 
         Id,
+        Return,
 
         ScopeBegin,
         ScopeEnd,

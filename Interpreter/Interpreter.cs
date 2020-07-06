@@ -35,8 +35,7 @@ namespace Interpreter
                 case ASTUnaryOperator unaryOperator:
                     return VisitUnaryOperator(unaryOperator);
                 case ASTCompound compound:
-                    VisitCompound(compound);
-                    return null;
+                    return VisitCompound(compound);
                 case ASTAssign assign:
                     VisitAssign(assign);
                     return null;
@@ -53,6 +52,9 @@ namespace Interpreter
                     return null;
                 case ASTFunctionCall functionCall:
                     return VisitFunctionCall(functionCall);
+                case ASTReturn returnStatement:
+                    return VisitReturnStatement(returnStatement);
+                    
             }
 
             throw new ArgumentException($"[{nameof(Interpreter)}] No visit method for node type {node.GetType()}");
@@ -154,22 +156,33 @@ namespace Interpreter
             Logger.Debug($"Enter {functionName}");
             _callStack.Push(activationRecord);
 
-            Visit(symbolFunction.Body);
+            var result = Visit(symbolFunction.Body);
 
             Logger.DebugMemory($"Leave {functionName}");
             Logger.DebugMemory(_callStack.ToString());
 
             _callStack.Pop();
 
-            return null;
+            return result;
         }
 
-        private void VisitCompound(ASTCompound node)
+        private dynamic VisitReturnStatement(ASTReturn node)
+        {
+            return Visit(node.Expression);
+        }
+
+        private dynamic VisitCompound(ASTCompound node)
         {
             foreach (var child in node.Children)
             {
+                if(child is ASTReturn)
+                {
+                    return Visit(child);
+                }
                 Visit(child);
             }
+
+            return null;
         }
 
         private double VisitUnaryOperator(ASTUnaryOperator node)

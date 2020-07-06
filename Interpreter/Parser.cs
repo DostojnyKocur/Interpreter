@@ -75,9 +75,20 @@ namespace Interpreter
                     return StatementAssignmentFunctionCall();
                 case TokenType.TypeNumber:
                     return StatementDeclarationsDefinitionsAssignments();
+                case TokenType.Return:
+                    return ReturnStatement();
                 default:
                     return Empty();
             }
+        }
+
+        private ASTNode ReturnStatement()
+        {
+            var returnToken = _currentToken;
+            Eat(TokenType.Return);
+            var result = new ASTReturn(returnToken, Expression());
+            Eat(TokenType.Semicolon);
+            return result;
         }
 
         private ASTNode StatementAssignmentFunctionCall()
@@ -216,10 +227,21 @@ namespace Interpreter
                     var node = Expression();
                     Eat(TokenType.RightParen);
                     return node;
-                default:
-                    Eat(TokenType.Id);
-                    return new ASTVariable(token);
+                case TokenType.Id:
+                    if (_lexer.CurrentChar == '(')
+                    {
+                        Eat(TokenType.Id);
+                        return FunctionCall(token);
+                    }
+                    else
+                    {
+                        Eat(TokenType.Id);
+                        return new ASTVariable(token);
+                    }
             }
+
+            ThrowParsingException(ErrorCode.UnexpectedToken, _currentToken);
+            return null;
         }
 
         private ASTFunctionDefinition FunctionDefinition(ASTType returnType, Token name)

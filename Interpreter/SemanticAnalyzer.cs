@@ -61,6 +61,9 @@ namespace Interpreter
                 case ASTFunctionCall functionCall:
                     VisitFunctionCall(functionCall);
                     break;
+                case ASTReturn returnStatement:
+                    VisitReturnStatement(returnStatement);
+                    break;
                 default:
                     throw new ArgumentException($"[{nameof(SemanticAnalyzer)}] No visit method for node type {node.GetType()}");
             }
@@ -84,7 +87,7 @@ namespace Interpreter
             Visit(node.Root);
 
             var mainFunction = _currentScope.Lookup("Main", true);
-            if(mainFunction == null)
+            if (mainFunction == null)
             {
                 ThrowSemanticException(ErrorCode.MissingMain, node.Token);
             }
@@ -133,7 +136,7 @@ namespace Interpreter
             var variableName = node.Variable.Name;
             var variableSymbol = new SymbolVariable(variableName, typeSymbol);
 
-            if(_currentScope.Lookup(variableName, true) != null)
+            if (_currentScope.Lookup(variableName, true) != null)
             {
                 ThrowSemanticException(ErrorCode.DuplicateIdentifier, node.Variable.Token);
             }
@@ -162,7 +165,7 @@ namespace Interpreter
         {
             var variableName = node.Name;
             var variableSymbol = _currentScope.Lookup(variableName);
-            if(variableSymbol is null)
+            if (variableSymbol is null)
             {
                 ThrowSemanticException(ErrorCode.IdentifierNotFound, node.Token);
             }
@@ -184,11 +187,11 @@ namespace Interpreter
             _currentScope.Define(functionSymbol);
 
             Logger.DebugScope($"Enter scope : {functionName}");
-            var functionScope = new ScopedSymbolTable(functionName, _currentScope.Level + 1, _currentScope) ;
+            var functionScope = new ScopedSymbolTable(functionName, _currentScope.Level + 1, _currentScope);
 
             _currentScope = functionScope;
 
-            foreach(var param in node.Parameters)
+            foreach (var param in node.Parameters)
             {
                 var paramName = param.Variable.Name;
                 var paramType = _currentScope.Lookup(param.Type.Name);
@@ -225,17 +228,22 @@ namespace Interpreter
             var formalParameters = (functionSymbol as SymbolFunction).Parameters;
             var actualParameters = functionCall.ActualParameters;
 
-            if(formalParameters.Count != actualParameters.Count)
+            if (formalParameters.Count != actualParameters.Count)
             {
                 ThrowSemanticException(ErrorCode.WrongParamNumber, functionCall.Token);
             }
 
-            foreach(var param in functionCall.ActualParameters)
+            foreach (var param in functionCall.ActualParameters)
             {
                 Visit(param);
             }
 
             functionCall.SymbolFunction = (functionSymbol as SymbolFunction);
+        }
+
+        private void VisitReturnStatement(ASTReturn node)
+        {
+            Visit(node.Expression);
         }
 
         private void ThrowSemanticException(ErrorCode errorCode, Token token)

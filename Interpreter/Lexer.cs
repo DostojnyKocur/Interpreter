@@ -8,38 +8,40 @@ namespace Interpreter
     {
         private static readonly Dictionary<string, Token> ReserverKeywords = new Dictionary<string, Token>
         {
+            { "return",  new Token(TokenType.Return, "return") },
             { "number",  new Token(TokenType.TypeNumber, "number") }
         };
 
         private string _text = string.Empty;
         private int _position = 0;
-        private char _currentChar = char.MinValue;
         private uint _lineNumber = 1;
         private uint _column = 1;
 
-        public Lexer(string text) => (_text, _currentChar) = (text, text[_position]);
+        public Lexer(string text) => (_text, CurrentChar) = (text, text[_position]);
+
+        public char CurrentChar { get; private set; } = char.MinValue;
 
         public Token GetNextToken()
         {
-            while (_currentChar != char.MaxValue)
+            while (CurrentChar != char.MaxValue)
             {
-                if (char.IsWhiteSpace(_currentChar))
+                if (char.IsWhiteSpace(CurrentChar))
                 {
                     SkipWhitespace();
                     continue;
                 }
 
-                if (char.IsDigit(_currentChar))
+                if (char.IsDigit(CurrentChar))
                 {
                     return GetNumber();
                 }
 
-                if (char.IsLetterOrDigit(_currentChar))
+                if (char.IsLetterOrDigit(CurrentChar))
                 {
                     return GetId();
                 }
 
-                if(_currentChar == '/')
+                if(CurrentChar == '/')
                 {
                     if (Peek() == '*')
                     {
@@ -54,11 +56,11 @@ namespace Interpreter
                 }
                 else
                 {
-                    var tokenType = TokenTypes.GetForChar(_currentChar);
+                    var tokenType = TokenTypes.GetForChar(CurrentChar);
                     Advance();
                     if (tokenType is null)
                     {
-                        var message = $"Lexer error on '{_currentChar}' line: {_lineNumber} column: {_column}";
+                        var message = $"Lexer error on '{CurrentChar}' line: {_lineNumber} column: {_column}";
                         throw new LexerError(message: message);
                     }
                     return new Token((TokenType)tokenType, null, _lineNumber, _column);
@@ -70,7 +72,7 @@ namespace Interpreter
 
         private void Advance()
         {
-            if(_currentChar == '\n')
+            if(CurrentChar == '\n')
             {
                 _lineNumber += 1;
                 _column = 0;
@@ -80,11 +82,11 @@ namespace Interpreter
 
             if (_position > _text.Length - 1)
             {
-                _currentChar = char.MaxValue;
+                CurrentChar = char.MaxValue;
             }
             else
             {
-                _currentChar = _text[_position];
+                CurrentChar = _text[_position];
                 _column += 1;
             }
         }
@@ -105,7 +107,7 @@ namespace Interpreter
 
         private void SkipWhitespace()
         {
-            while (char.IsWhiteSpace(_currentChar) && _currentChar != char.MaxValue)
+            while (char.IsWhiteSpace(CurrentChar) && CurrentChar != char.MaxValue)
             {
                 Advance();
             }
@@ -113,7 +115,7 @@ namespace Interpreter
 
         private void SkipComment()
         {
-            while ((_currentChar != '*') || (Peek() != '/'))
+            while ((CurrentChar != '*') || (Peek() != '/'))
             {
                 Advance();
             }
@@ -126,9 +128,9 @@ namespace Interpreter
         {
             var result = string.Empty;
 
-            while ((char.IsLetterOrDigit(_currentChar) || _currentChar == '_') && _currentChar != char.MaxValue)
+            while ((char.IsLetterOrDigit(CurrentChar) || CurrentChar == '_') && CurrentChar != char.MaxValue)
             {
-                result += _currentChar;
+                result += CurrentChar;
                 Advance();
             }
 
@@ -144,9 +146,9 @@ namespace Interpreter
         {
             var result = string.Empty;
 
-            while ((char.IsDigit(_currentChar) || _currentChar == '.') && _currentChar != char.MaxValue)
+            while ((char.IsDigit(CurrentChar) || CurrentChar == '.') && CurrentChar != char.MaxValue)
             {
-                result += _currentChar;
+                result += CurrentChar;
                 Advance();
             }
 
