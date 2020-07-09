@@ -68,6 +68,9 @@ namespace Interpreter
                 case ASTIfElse ifElseStatement:
                     VisitIfElseStatement(ifElseStatement);
                     break;
+                case ASTWhile whileStatement:
+                    VisitWhileStatement(whileStatement);
+                    break;
                 default:
                     throw new ArgumentException($"[{nameof(SemanticAnalyzer)}] No visit method for node type {node.GetType()}");
             }
@@ -252,7 +255,10 @@ namespace Interpreter
 
         private void VisitReturnStatement(ASTReturn node)
         {
-            Visit(node.Expression);
+            if (node.Expression != null)
+            {
+                Visit(node.Expression);
+            }
         }
 
         private void VisitIfElseStatement(ASTIfElse node)
@@ -263,6 +269,12 @@ namespace Interpreter
             {
                 Visit(node.Else);
             }
+        }
+
+        private void VisitWhileStatement(ASTWhile node)
+        {
+            Visit(node.Condition);
+            Visit(node.Body);
         }
 
         private void ThrowSemanticException(ErrorCode errorCode, Token token)

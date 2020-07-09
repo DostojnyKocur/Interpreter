@@ -61,6 +61,8 @@ namespace Interpreter
                     return VisitReturnStatement(returnStatement);
                 case ASTIfElse ifElseStatement:
                     return VisitIfElseStatement(ifElseStatement);
+                case ASTWhile whileStatement:
+                    return VisitWhileStatement(whileStatement);
             }
 
             throw new ArgumentException($"[{nameof(Interpreter)}] No visit method for node type {node.GetType()}");
@@ -189,7 +191,7 @@ namespace Interpreter
             return new VisitResult
             {
                 IsReturned = true,
-                Value = Visit(node.Expression).Value
+                Value = node.Expression != null ? Visit(node.Expression).Value : null
             };
         }
 
@@ -199,7 +201,7 @@ namespace Interpreter
             if (condition)
             {
                 var result = Visit(node.IfTrue);
-                if(result.IsReturned)
+                if (result != null && result.IsReturned)
                 {
                     return result;
                 }
@@ -207,10 +209,26 @@ namespace Interpreter
             else if (node.Else != null)
             {
                 var result = Visit(node.Else);
-                if (result.IsReturned)
+                if (result != null && result.IsReturned)
                 {
                     return result;
                 }
+            }
+
+            return null;
+        }
+
+        private VisitResult VisitWhileStatement(ASTWhile node)
+        {
+            var condition = Visit(node.Condition).Value;
+            while (condition)
+            {
+                var result = Visit(node.Body);
+                if (result != null && result.IsReturned)
+                {
+                    return result;
+                }
+                condition = Visit(node.Condition).Value;
             }
 
             return null;
@@ -228,15 +246,11 @@ namespace Interpreter
                         Value = Visit(child).Value
                     };
                 }
-                if (child is ASTIfElse)
+                var result = Visit(child);
+                if (result != null && result.IsReturned)
                 {
-                    var result = Visit(child);
-                    if (result != null && result.IsReturned)
-                    {
-                        return result;
-                    }
+                    return result;
                 }
-                Visit(child);
             }
 
             return null;

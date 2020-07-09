@@ -12,7 +12,8 @@ namespace Interpreter
             { "void",  new Token(TokenType.TypeVoid, "void") },
             { "number",  new Token(TokenType.TypeNumber, "number") },
             { "if",  new Token(TokenType.If, "if") },
-            { "else",  new Token(TokenType.Else, "else") }
+            { "else",  new Token(TokenType.Else, "else") },
+            { "while",  new Token(TokenType.While, "while") }
         };
 
         private string _text = string.Empty;

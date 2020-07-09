@@ -1,16 +1,13 @@
 {
+	number Fun()
+	{
+		return 3;
+	}
+
 	number Main()
 	{
-		number param1 = 3;
-		number param2 = 3;
-	
-		if(param1 != param2)
-		{
-			return 1;
-		}
-		else
-		{
-			return 0;
-		}
+		number x = Fun();
+		
+		return 0;
 	}
 }

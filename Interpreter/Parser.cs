@@ -79,13 +79,15 @@ namespace Interpreter
                 case TokenType.Return:
                     return ReturnStatement();
                 case TokenType.If:
-                    return IfElse();
+                    return IfElseStatement();
+                case TokenType.While:
+                    return WhileStatement();
                 default:
                     return Empty();
             }
         }
 
-        private ASTIfElse IfElse()
+        private ASTIfElse IfElseStatement()
         {
             var token = _currentToken;
             Eat(TokenType.If);
@@ -103,13 +105,34 @@ namespace Interpreter
             return new ASTIfElse(token, condition, ifTrue, null);
         }
 
+        private ASTWhile WhileStatement()
+        {
+            var token = _currentToken;
+            Eat(TokenType.While);
+            Eat(TokenType.LeftParen);
+            var condition = Condition();
+            Eat(TokenType.RightParen);
+            var body = Statement();
+
+            return new ASTWhile(token, condition, body);
+        }
+
         private ASTNode ReturnStatement()
         {
             var returnToken = _currentToken;
             Eat(TokenType.Return);
-            var result = new ASTReturn(returnToken, Expression());
-            Eat(TokenType.Semicolon);
-            return result;
+            if (_currentToken.Type == TokenType.Semicolon)
+            {
+                var result = new ASTReturn(returnToken, null);
+                Eat(TokenType.Semicolon);
+                return result;
+            }
+            else
+            {
+                var result = new ASTReturn(returnToken, Expression());
+                Eat(TokenType.Semicolon);
+                return result;
+            }
         }
 
         private ASTNode StatementAssignmentFunctionCall()

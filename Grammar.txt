@@ -4,7 +4,7 @@ statement_list				:	statement | statement statement_list
 statement					:	compound_statement | assignment_statement SEMI | variables_declarations | function_definition | function_call SEMI | return_statement SEMI | while_statement | if_statement | empty
 assignment_statement		:	variable ASSIGN expression | variables_declarations ASSIGN expression
 return_statement			:	RETURN expression 
-while_statement				:	WHILE LPAREN condition RPAREN compound_statement
+while_statement				:	WHILE LPAREN condition RPAREN statement
 if_statement				:	IF LPAREN condition RPAREN statement (ELSE statement)?
 expression					:	term ((PLUS | MINUS) term)* | condition
 term						:	factor ((MUL | DIV | MOD) factor)*

@@ -10,6 +10,7 @@ namespace Interpreter.Tokens
 
         If,
         Else,
+        While,
 
         Plus,
         Minus,
