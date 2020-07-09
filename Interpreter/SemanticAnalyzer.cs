@@ -264,17 +264,47 @@ namespace Interpreter
         private void VisitIfElseStatement(ASTIfElse node)
         {
             Visit(node.Condition);
+
+            Logger.DebugScope($"Enter scope : if");
+            var ifScope = new ScopedSymbolTable("if", _currentScope.Level + 1, _currentScope);
+            _currentScope = ifScope;
+
             Visit(node.IfTrue);
+
+            DebugPrintSymbolTable();
+
+            _currentScope = _currentScope.EnclosingScope;
+            Logger.DebugScope($"Leave scope : if");
+
             if (node.Else != null)
             {
+                Logger.DebugScope($"Enter scope : else");
+                var elseScope = new ScopedSymbolTable("else", _currentScope.Level + 1, _currentScope);
+                _currentScope = elseScope;
+
                 Visit(node.Else);
+
+                DebugPrintSymbolTable();
+
+                _currentScope = _currentScope.EnclosingScope;
+                Logger.DebugScope($"Leave scope : else");
             }
         }
 
         private void VisitWhileStatement(ASTWhile node)
         {
             Visit(node.Condition);
+
+            Logger.DebugScope($"Enter scope : while");
+            var whileScope = new ScopedSymbolTable("while", _currentScope.Level + 1, _currentScope);
+            _currentScope = whileScope;
+
             Visit(node.Body);
+
+            DebugPrintSymbolTable();
+
+            _currentScope = _currentScope.EnclosingScope;
+            Logger.DebugScope($"Leave scope : while");
         }
 
         private void ThrowSemanticException(ErrorCode errorCode, Token token)
