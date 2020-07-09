@@ -65,6 +65,9 @@ namespace Interpreter
                 case ASTReturn returnStatement:
                     VisitReturnStatement(returnStatement);
                     break;
+                case ASTIfElse ifElseStatement:
+                    VisitIfElseStatement(ifElseStatement);
+                    break;
                 default:
                     throw new ArgumentException($"[{nameof(SemanticAnalyzer)}] No visit method for node type {node.GetType()}");
             }
@@ -209,7 +212,7 @@ namespace Interpreter
 
             Visit(node.Body);
 
-            if(typeName != "void" && !node.Body.Children.Any(statement => statement.GetType() == typeof(ASTReturn)))
+            if (typeName != "void" && !HasReturnStatement(node.Body))
             {
                 ThrowSemanticException(ErrorCode.MissingReturnStatement, node.Name);
             }
@@ -252,10 +255,45 @@ namespace Interpreter
             Visit(node.Expression);
         }
 
+        private void VisitIfElseStatement(ASTIfElse node)
+        {
+            Visit(node.Condition);
+            Visit(node.IfTrue);
+            if (node.Else != null)
+            {
+                Visit(node.Else);
+            }
+        }
+
         private void ThrowSemanticException(ErrorCode errorCode, Token token)
         {
             var message = $"{ErrorCodes.StringRepresentatnion[errorCode]} -> {token}";
             throw new SemanticError(errorCode, token, message);
+        }
+
+        private bool HasReturnStatement(ASTNode node)
+        {
+            if(node is null)
+            {
+                return false;
+            }
+
+            var result = false;
+            switch (node)
+            {
+                case ASTReturn @return:
+                    return true;
+                case ASTCompound compound:
+                    foreach(var children in compound.Children)
+                    {
+                        result |= HasReturnStatement(children);
+                    }
+                    return result;
+                case ASTIfElse ifElse:
+                    return HasReturnStatement(ifElse.IfTrue) || HasReturnStatement(ifElse.Else);
+            }
+
+            return false;
         }
     }
 }

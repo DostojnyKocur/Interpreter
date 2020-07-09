@@ -9,8 +9,10 @@ namespace Interpreter
         private static readonly Dictionary<string, Token> ReserverKeywords = new Dictionary<string, Token>
         {
             { "return",  new Token(TokenType.Return, "return") },
-            { "void",  new Token(TokenType.TypeNumber, "void") },
-            { "number",  new Token(TokenType.TypeNumber, "number") }
+            { "void",  new Token(TokenType.TypeVoid, "void") },
+            { "number",  new Token(TokenType.TypeNumber, "number") },
+            { "if",  new Token(TokenType.If, "if") },
+            { "else",  new Token(TokenType.Else, "else") }
         };
 
         private string _text = string.Empty;
@@ -42,7 +44,7 @@ namespace Interpreter
                     return GetId();
                 }
 
-                if(CurrentChar == '/')
+                if (CurrentChar == '/')
                 {
                     if (Peek() == '*')
                     {
@@ -57,6 +59,12 @@ namespace Interpreter
                 }
                 else
                 {
+                    var compareOperator = GetCompareOperator();
+                    if (compareOperator != null)
+                    {
+                        return compareOperator;
+                    }
+
                     var tokenType = TokenTypes.GetForChar(CurrentChar);
                     Advance();
                     if (tokenType is null)
@@ -73,7 +81,7 @@ namespace Interpreter
 
         private void Advance()
         {
-            if(CurrentChar == '\n')
+            if (CurrentChar == '\n')
             {
                 _lineNumber += 1;
                 _column = 0;
@@ -123,6 +131,66 @@ namespace Interpreter
 
             Advance();  // '*'
             Advance();  // '/'
+        }
+
+        private Token GetCompareOperator()
+        {
+            switch (CurrentChar)
+            {
+                case '=':
+                    if (Peek() == '=')
+                    {
+                        Advance();
+                        Advance();
+                        return new Token(TokenType.Equal, null, _lineNumber, _column);
+                    }
+                    break;
+                case '>':
+                    if (Peek() == '=')
+                    {
+                        Advance();
+                        Advance();
+                        return new Token(TokenType.GreaterEqual, null, _lineNumber, _column);
+                    }
+                    Advance();
+                    return new Token(TokenType.Greater, null, _lineNumber, _column);
+                case '<':
+                    if (Peek() == '=')
+                    {
+                        Advance();
+                        Advance();
+                        return new Token(TokenType.LessEqual, null, _lineNumber, _column);
+                    }
+                    Advance();
+                    return new Token(TokenType.Less, null, _lineNumber, _column);
+                case '!':
+                    if (Peek() == '=')
+                    {
+                        Advance();
+                        Advance();
+                        return new Token(TokenType.NotEqual, null, _lineNumber, _column);
+                    }
+                    Advance();
+                    return new Token(TokenType.Not, null, _lineNumber, _column);
+                case '&':
+                    if (Peek() == '&')
+                    {
+                        Advance();
+                        Advance();
+                        return new Token(TokenType.And, null, _lineNumber, _column);
+                    }
+                    break;
+                case '|':
+                    if (Peek() == '|')
+                    {
+                        Advance();
+                        Advance();
+                        return new Token(TokenType.Or, null, _lineNumber, _column);
+                    }
+                    break;
+
+            }
+            return null;
         }
 
         private Token GetId()

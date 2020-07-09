@@ -8,6 +8,12 @@ namespace Interpreter
 {
     public class Interpreter
     {
+        private class VisitResult
+        {
+            public bool IsReturned { get; set; }
+            public dynamic Value { get; set; }
+        }
+
         private readonly CallStack _callStack = new CallStack();
 
         public void Run(ASTNode tree)
@@ -15,7 +21,7 @@ namespace Interpreter
             Visit(tree);
         }
 
-        private dynamic Visit(ASTNode node)
+        private VisitResult Visit(ASTNode node)
         {
             switch (node)
             {
@@ -53,7 +59,8 @@ namespace Interpreter
                     return VisitFunctionCall(functionCall);
                 case ASTReturn returnStatement:
                     return VisitReturnStatement(returnStatement);
-                    
+                case ASTIfElse ifElseStatement:
+                    return VisitIfElseStatement(ifElseStatement);
             }
 
             throw new ArgumentException($"[{nameof(Interpreter)}] No visit method for node type {node.GetType()}");
@@ -61,7 +68,7 @@ namespace Interpreter
 
         private dynamic VisitProgram(ASTProgram program)
         {
-            Logger.Debug("Enter Main");
+            Logger.Debug("Enter Program");
             var activationRecord = new ActivationRecord("Main", ActivationRecordType.Program, 1);
             _callStack.Push(activationRecord);
 
@@ -71,12 +78,12 @@ namespace Interpreter
 
             var result = Visit(mainFunction);
 
-            Logger.DebugMemory("Leave Main");
+            Logger.DebugMemory("Leave Program");
             Logger.DebugMemory(_callStack.ToString());
 
             _callStack.Pop();
 
-            Logger.Debug($"Program exited with status code {result}");
+            Logger.Debug($"Program exited with status code {result.Value}");
 
             return result;
         }
@@ -88,13 +95,13 @@ namespace Interpreter
             switch (node.Left)
             {
                 case ASTVariable variable:
-                    _callStack.Top[variable.Name] = value;
+                    _callStack.Top[variable.Name] = value.Value;
                     return;
                 case ASTVariablesDeclarations variablesDeclarations:
                     Visit(variablesDeclarations);
                     foreach (var variable in variablesDeclarations.Children)
                     {
-                        _callStack.Top[variable.Variable.Name] = value;
+                        _callStack.Top[variable.Variable.Name] = value.Value;
                     }
                     return;
             }
@@ -102,15 +109,22 @@ namespace Interpreter
             throw new ArgumentException($"Invalid AST node type {node.GetType()}");
         }
 
-        private object VisitVariable(ASTVariable node)
+        private VisitResult VisitVariable(ASTVariable node)
         {
-            var variableName = node.Name;
-            return _callStack.Top[variableName];
+            return new VisitResult
+            {
+                IsReturned = true,
+                Value = _callStack.Top[node.Name]
+            };
         }
 
-        private double VisitNumber(ASTNumber node)
+        private VisitResult VisitNumber(ASTNumber node)
         {
-            return node.Value;
+            return new VisitResult
+            {
+                IsReturned = true,
+                Value = node.Value
+            };
         }
 
         private void VisitEmpty(ASTEmpty node)
@@ -142,7 +156,7 @@ namespace Interpreter
             return;
         }
 
-        private dynamic VisitFunctionCall(ASTFunctionCall functionCall)
+        private VisitResult VisitFunctionCall(ASTFunctionCall functionCall)
         {
             var functionName = functionCall.FunctionName;
             var symbolFunction = functionCall.SymbolFunction;
@@ -153,7 +167,7 @@ namespace Interpreter
 
             for (int i = 0; i < formalParameters.Count; ++i)
             {
-                activationRecord[formalParameters[i].Name] = Visit(actualParameters[i]);
+                activationRecord[formalParameters[i].Name] = Visit(actualParameters[i]).Value;
             }
 
             Logger.Debug($"Enter {functionName}");
@@ -161,7 +175,8 @@ namespace Interpreter
 
             var result = Visit(symbolFunction.Body);
 
-            Logger.DebugMemory($"Leave {functionName}");
+            var returnedValue = result != null ? result.Value : "null";
+            Logger.DebugMemory($"Leave {functionName}, returned value ({returnedValue})");
             Logger.DebugMemory(_callStack.ToString());
 
             _callStack.Pop();
@@ -169,18 +184,57 @@ namespace Interpreter
             return result;
         }
 
-        private dynamic VisitReturnStatement(ASTReturn node)
+        private VisitResult VisitReturnStatement(ASTReturn node)
         {
-            return Visit(node.Expression);
+            return new VisitResult
+            {
+                IsReturned = true,
+                Value = Visit(node.Expression).Value
+            };
         }
 
-        private dynamic VisitCompound(ASTCompound node)
+        private VisitResult VisitIfElseStatement(ASTIfElse node)
+        {
+            var condition = Visit(node.Condition).Value;
+            if (condition)
+            {
+                var result = Visit(node.IfTrue);
+                if(result.IsReturned)
+                {
+                    return result;
+                }
+            }
+            else if (node.Else != null)
+            {
+                var result = Visit(node.Else);
+                if (result.IsReturned)
+                {
+                    return result;
+                }
+            }
+
+            return null;
+        }
+
+        private VisitResult VisitCompound(ASTCompound node)
         {
             foreach (var child in node.Children)
             {
-                if(child is ASTReturn)
+                if (child is ASTReturn)
                 {
-                    return Visit(child);
+                    return new VisitResult
+                    {
+                        IsReturned = true,
+                        Value = Visit(child).Value
+                    };
+                }
+                if (child is ASTIfElse)
+                {
+                    var result = Visit(child);
+                    if (result != null && result.IsReturned)
+                    {
+                        return result;
+                    }
                 }
                 Visit(child);
             }
@@ -188,33 +242,99 @@ namespace Interpreter
             return null;
         }
 
-        private double VisitUnaryOperator(ASTUnaryOperator node)
+        private VisitResult VisitUnaryOperator(ASTUnaryOperator node)
         {
             switch (node.Type)
             {
                 case TokenType.Plus:
-                    return +Visit(node.Expression);
+                    return new VisitResult
+                    {
+                        Value = +Visit(node.Expression).Value
+                    };
                 case TokenType.Minus:
-                    return -Visit(node.Expression);
+                    return new VisitResult
+                    {
+                        Value = -Visit(node.Expression).Value
+                    };
+                case TokenType.Not:
+                    return new VisitResult
+                    {
+                        Value = !Visit(node.Expression).Value
+                    };
             }
 
             throw new ArgumentException($"Invalid AST node type {node.GetType()}");
         }
 
-        private double VisitBinaryOperator(ASTBinaryOperator node)
+        private VisitResult VisitBinaryOperator(ASTBinaryOperator node)
         {
             switch (node.Type)
             {
                 case TokenType.Plus:
-                    return Visit(node.Left) + Visit(node.Right);
+                    return new VisitResult
+                    {
+                        Value = Visit(node.Left).Value + Visit(node.Right).Value
+                    };
                 case TokenType.Minus:
-                    return Visit(node.Left) - Visit(node.Right);
+                    return new VisitResult
+                    {
+                        Value = Visit(node.Left).Value - Visit(node.Right).Value
+                    };
                 case TokenType.Multiplication:
-                    return Visit(node.Left) * Visit(node.Right);
+                    return new VisitResult
+                    {
+                        Value = Visit(node.Left).Value * Visit(node.Right).Value
+                    };
                 case TokenType.Divide:
-                    return Visit(node.Left) / Visit(node.Right);
+                    return new VisitResult
+                    {
+                        Value = Visit(node.Left).Value / Visit(node.Right).Value
+                    };
                 case TokenType.Modulo:
-                    return Visit(node.Left) % Visit(node.Right);
+                    return new VisitResult
+                    {
+                        Value = Visit(node.Left).Value % Visit(node.Right).Value
+                    };
+                case TokenType.Equal:
+                    return new VisitResult
+                    {
+                        Value = Visit(node.Left).Value == Visit(node.Right).Value
+                    };
+                case TokenType.NotEqual:
+                    return new VisitResult
+                    {
+                        Value = Visit(node.Left).Value != Visit(node.Right).Value
+                    };
+                case TokenType.Greater:
+                    return new VisitResult
+                    {
+                        Value = Visit(node.Left).Value > Visit(node.Right).Value
+                    };
+                case TokenType.GreaterEqual:
+                    return new VisitResult
+                    {
+                        Value = Visit(node.Left).Value >= Visit(node.Right).Value
+                    };
+                case TokenType.Less:
+                    return new VisitResult
+                    {
+                        Value = Visit(node.Left).Value < Visit(node.Right).Value
+                    };
+                case TokenType.LessEqual:
+                    return new VisitResult
+                    {
+                        Value = Visit(node.Left).Value <= Visit(node.Right).Value
+                    };
+                case TokenType.And:
+                    return new VisitResult
+                    {
+                        Value = Visit(node.Left).Value && Visit(node.Right).Value
+                    };
+                case TokenType.Or:
+                    return new VisitResult
+                    {
+                        Value = Visit(node.Left).Value || Visit(node.Right).Value
+                    };
             }
 
             throw new ArgumentException($"Invalid AST node type {node.GetType()}");

@@ -11,6 +11,7 @@ namespace Interpreter
     {
         private static readonly TokenType[] TermOperators = { TokenType.Plus, TokenType.Minus };
         private static readonly TokenType[] FactorOperators = { TokenType.Multiplication, TokenType.Divide, TokenType.Modulo };
+        private static readonly TokenType[] CompareOperators = { TokenType.Equal, TokenType.NotEqual, TokenType.Greater, TokenType.GreaterEqual, TokenType.Less, TokenType.LessEqual };
 
         private readonly Lexer _lexer;
         private Token _currentToken = null;
@@ -77,9 +78,29 @@ namespace Interpreter
                     return StatementDeclarationsDefinitionsAssignments();
                 case TokenType.Return:
                     return ReturnStatement();
+                case TokenType.If:
+                    return IfElse();
                 default:
                     return Empty();
             }
+        }
+
+        private ASTIfElse IfElse()
+        {
+            var token = _currentToken;
+            Eat(TokenType.If);
+            Eat(TokenType.LeftParen);
+            var condition = Condition();
+            Eat(TokenType.RightParen);
+            var ifTrue = Statement();
+            if(_currentToken.Type == TokenType.Else)
+            {
+                Eat(TokenType.Else);
+                var @else = Statement();
+                return new ASTIfElse(token, condition, ifTrue, @else);
+            }
+
+            return new ASTIfElse(token, condition, ifTrue, null);
         }
 
         private ASTNode ReturnStatement()
@@ -180,6 +201,78 @@ namespace Interpreter
             return node;
         }
 
+        private ASTNode Condition()
+        {
+            return OrCondition();
+        }
+
+        private ASTNode OrCondition()
+        {
+            var node = AndCondition();
+
+            while (_currentToken.Type == TokenType.Or)
+            {
+                var token = _currentToken;
+
+                Eat(TokenType.Or);
+
+                node = new ASTBinaryOperator(node, token, AndCondition());
+            }
+
+            return node;
+        }
+
+        private ASTNode AndCondition()
+        {
+            var node = NotCondition();
+
+            while(_currentToken.Type == TokenType.And)
+            {
+                var token = _currentToken;
+
+                Eat(TokenType.And);
+
+                node = new ASTBinaryOperator(node, token, NotCondition());
+            }
+
+            return node;
+        }
+
+        private ASTNode NotCondition()
+        {
+
+            if(_currentToken.Type == TokenType.Not)
+            {
+                var token = _currentToken;
+                Eat(TokenType.Not);
+                return new ASTUnaryOperator(token, NotCondition());
+            }
+            else if (_currentToken.Type == TokenType.LeftParen)
+            {
+                Eat(TokenType.LeftParen);
+                var condition = Condition();
+                Eat(TokenType.RightParen);
+                return condition;
+            }
+            return Comparision();
+        }
+
+        private ASTNode Comparision()
+        {
+            var node = Expression();
+
+            while(CompareOperators.Contains(_currentToken.Type))
+            {
+                var token = _currentToken;
+
+                Eat(token.Type);
+
+                node = new ASTBinaryOperator(node, token, Expression());
+            }
+
+            return node;
+        }
+
         private ASTNode Term()
         {
             var node = Factor();
@@ -188,18 +281,7 @@ namespace Interpreter
             {
                 var token = _currentToken;
 
-                switch (token.Type)
-                {
-                    case TokenType.Multiplication:
-                        Eat(TokenType.Multiplication);
-                        break;
-                    case TokenType.Divide:
-                        Eat(TokenType.Divide);
-                        break;
-                    case TokenType.Modulo:
-                        Eat(TokenType.Modulo);
-                        break;
-                }
+                Eat(token.Type);
 
                 node = new ASTBinaryOperator(node, token, Factor());
             }

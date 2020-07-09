@@ -8,11 +8,24 @@ namespace Interpreter.Tokens
         TypeVoid,
         ConstNumber,
 
+        If,
+        Else,
+
         Plus,
         Minus,
         Multiplication,
         Divide,
         Modulo,
+
+        Not,
+        And,
+        Or,
+        Equal,
+        NotEqual,
+        Greater,
+        GreaterEqual,
+        Less,
+        LessEqual,
 
         Id,
         Return,
