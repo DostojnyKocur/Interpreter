@@ -1,13 +1,14 @@
 {
-	number Fun()
+	bool Equal(number param1, number param2)
 	{
-		return 3;
+		return param1 * param2 == param2 + param1;
 	}
 
 	number Main()
 	{
-		number x = Fun();
+		bool x = Equal(3, 2);
 		
 		return 0;
 	}
 }
+

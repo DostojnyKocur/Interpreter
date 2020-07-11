@@ -35,6 +35,8 @@ namespace Interpreter
                     return null;
                 case ASTNumber number:
                     return VisitNumber(number);
+                case ASTBool @bool:
+                    return VisitBool(@bool);
                 case ASTBinaryOperator binaryOperator:
                     return VisitBinaryOperator(binaryOperator);
                 case ASTUnaryOperator unaryOperator:
@@ -129,6 +131,15 @@ namespace Interpreter
             };
         }
 
+        private VisitResult VisitBool(ASTBool node)
+        {
+            return new VisitResult
+            {
+                IsReturned = true,
+                Value = node.Value
+            };
+        }
+
         private void VisitEmpty(ASTEmpty node)
         {
             return;
@@ -150,7 +161,20 @@ namespace Interpreter
         private void VisitVariableDeclaration(ASTVariableDeclaration node)
         {
             var variableName = node.Variable.Name;
-            _callStack.Top[variableName] = 0;
+
+            switch(node.Type.Token.Type)
+            {
+                case TokenType.TypeNumber:
+                    _callStack.Top[variableName] = 0;
+                    break;
+                case TokenType.TypeBool:
+                    _callStack.Top[variableName] = false;
+                    break;
+                default:
+                    throw new ArgumentException($"Invalid variable type {variableName} : {node.Type.Name}");
+            }
+
+            
         }
 
         private void VisitFunctionDefinition(ASTFunctionDefinition node)

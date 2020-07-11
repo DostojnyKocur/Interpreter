@@ -50,6 +50,9 @@ namespace Interpreter
                 case ASTNumber number:
                     VisitNumber(number);
                     break;
+                case ASTBool @bool:
+                    VisitBool(@bool);
+                    break;
                 case ASTAssign assign:
                     VisitAssign(assign);
                     break;
@@ -77,6 +80,11 @@ namespace Interpreter
         }
 
         private void VisitNumber(ASTNumber node)
+        {
+            return;
+        }
+
+        private void VisitBool(ASTBool node)
         {
             return;
         }

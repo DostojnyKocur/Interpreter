@@ -8,7 +8,8 @@ namespace Interpreter.Symbols
         private readonly Dictionary<string, Symbol> _symbols = new Dictionary<string, Symbol>
         {
             { "void", new Symbol("void") },
-            { "number", new Symbol("number") }
+            { "number", new Symbol("number") },
+            { "bool", new Symbol("bool") }
         };
 
         public ScopedSymbolTable(string scopeName, uint scopeLevel, ScopedSymbolTable enclosingScope = null) 

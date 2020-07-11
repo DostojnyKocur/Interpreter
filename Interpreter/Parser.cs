@@ -75,6 +75,8 @@ namespace Interpreter
                 case TokenType.Id:
                     return StatementAssignmentFunctionCall();
                 case TokenType.TypeNumber:
+                case TokenType.TypeBool:
+                case TokenType.TypeVoid:
                     return StatementDeclarationsDefinitionsAssignments();
                 case TokenType.Return:
                     return ReturnStatement();
@@ -129,7 +131,7 @@ namespace Interpreter
             }
             else
             {
-                var result = new ASTReturn(returnToken, Expression());
+                var result = new ASTReturn(returnToken, Condition());
                 Eat(TokenType.Semicolon);
                 return result;
             }
@@ -157,7 +159,7 @@ namespace Interpreter
         private ASTNode StatementDeclarationsDefinitionsAssignments()
         {
             var typeToken = _currentToken; //type
-            Eat(TokenType.TypeNumber);
+            Eat(typeToken.Type);
             var idToken = _currentToken; //id
             Eat(TokenType.Id);
 
@@ -282,12 +284,19 @@ namespace Interpreter
 
         private ASTNode Comparision()
         {
+            if(_currentToken.Type == TokenType.ConstBool)
+            {
+                var token = _currentToken;
+                Eat(TokenType.ConstBool);
+
+                return new ASTBool(token);
+            }
+
             var node = Expression();
 
             while(CompareOperators.Contains(_currentToken.Type))
             {
                 var token = _currentToken;
-
                 Eat(token.Type);
 
                 node = new ASTBinaryOperator(node, token, Expression());
@@ -327,6 +336,9 @@ namespace Interpreter
                 case TokenType.ConstNumber:
                     Eat(TokenType.ConstNumber);
                     return new ASTNumber(token);
+                case TokenType.ConstBool:
+                    Eat(TokenType.ConstBool);
+                    return new ASTBool(token);
                 case TokenType.LeftParen:
                     Eat(TokenType.LeftParen);
                     var node = Expression();

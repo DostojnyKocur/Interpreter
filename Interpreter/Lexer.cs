@@ -11,6 +11,9 @@ namespace Interpreter
             { "return",  new Token(TokenType.Return, "return") },
             { "void",  new Token(TokenType.TypeVoid, "void") },
             { "number",  new Token(TokenType.TypeNumber, "number") },
+            { "bool",  new Token(TokenType.TypeBool, "bool") },
+            { "true",  new Token(TokenType.ConstBool, "true") },
+            { "false",  new Token(TokenType.ConstBool, "false") },
             { "if",  new Token(TokenType.If, "if") },
             { "else",  new Token(TokenType.Else, "else") },
             { "while",  new Token(TokenType.While, "while") }
