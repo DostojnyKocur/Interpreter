@@ -1,4 +1,4 @@
-﻿namespace Interpreter.Tokens
+﻿namespace Interpreter.LexerService.Tokens
 {
     public class Token
     {

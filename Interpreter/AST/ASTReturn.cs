@@ -1,12 +1,11 @@
-﻿using Interpreter.Tokens;
+﻿using Interpreter.LexerService.Tokens;
 
 namespace Interpreter.AST
 {
     public class ASTReturn : ASTNode
     {
-        public ASTReturn(Token token, ASTNode expression) => (Token, Expression) = (token, expression);
+        public ASTReturn(Token token, ASTNode condition) => (Token, Condition) = (token, condition);
 
-        public Token Token { get; }
-        public ASTNode Expression { get; }
+        public ASTNode Condition { get; }
     }
 }

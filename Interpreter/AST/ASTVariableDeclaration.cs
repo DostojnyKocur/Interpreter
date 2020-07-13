@@ -2,9 +2,9 @@
 {
     public class ASTVariableDeclaration : ASTNode
     {
-        public ASTVariableDeclaration(ASTVariable variable, ASTType type) => (Variable, Type) = (variable, type);
+        public ASTVariableDeclaration(ASTType type, ASTVariable variable) => (Token, VariableType, Variable) = (type.Token, type, variable);
 
         public ASTVariable Variable { get; }
-        public ASTType Type { get; }
+        public ASTType VariableType { get; }
     }
 }

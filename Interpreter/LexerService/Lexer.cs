@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 using Interpreter.Errors;
-using Interpreter.Tokens;
+using Interpreter.LexerService.Tokens;
 
-namespace Interpreter
+namespace Interpreter.LexerService
 {
-    public class Lexer
+    public class Lexer : ILexer
     {
         private static readonly Dictionary<string, Token> ReserverKeywords = new Dictionary<string, Token>
         {
@@ -30,6 +32,8 @@ namespace Interpreter
         public Lexer(string text) => (_text, CurrentChar) = (text, text[_position]);
 
         public char CurrentChar { get; private set; } = char.MinValue;
+        private char NextChar => _position + 1 > _text.Length - 1 ? char.MaxValue : _text[_position + 1];
+        private bool CurrentCharValid => CurrentChar != char.MaxValue;
 
         public Token GetNextToken()
         {
@@ -58,7 +62,7 @@ namespace Interpreter
 
                 if (CurrentChar == '/')
                 {
-                    if (Peek() == '*')
+                    if (NextChar == '*')
                     {
                         SkipComment();
                         continue;
@@ -91,38 +95,27 @@ namespace Interpreter
             return new Token(TokenType.EOF, null, _lineNumber, _column);
         }
 
-        private void Advance()
+        private void Advance(uint howMany = 1)
         {
-            if (CurrentChar == '\n')
+            for (var i = 0; i < howMany; ++i)
             {
-                _lineNumber += 1;
-                _column = 0;
-            }
+                if (CurrentChar == '\n')
+                {
+                    _lineNumber += 1;
+                    _column = 0;
+                }
 
-            _position += 1;
+                _position += 1;
 
-            if (_position > _text.Length - 1)
-            {
-                CurrentChar = char.MaxValue;
-            }
-            else
-            {
-                CurrentChar = _text[_position];
-                _column += 1;
-            }
-        }
-
-        private char Peek()
-        {
-            var peekPosition = _position + 1;
-
-            if (peekPosition > _text.Length - 1)
-            {
-                return char.MaxValue;
-            }
-            else
-            {
-                return _text[peekPosition];
+                if (_position > _text.Length - 1)
+                {
+                    CurrentChar = char.MaxValue;
+                }
+                else
+                {
+                    CurrentChar = _text[_position];
+                    _column += 1;
+                }
             }
         }
 
@@ -136,13 +129,12 @@ namespace Interpreter
 
         private void SkipComment()
         {
-            while ((CurrentChar != '*') || (Peek() != '/'))
+            while ((CurrentChar != '*') || (NextChar != '/'))
             {
                 Advance();
             }
 
-            Advance();  // '*'
-            Advance();  // '/'
+            Advance(2);  // '*' '/'
         }
 
         private Token GetCompareOperator()
@@ -150,53 +142,47 @@ namespace Interpreter
             switch (CurrentChar)
             {
                 case '=':
-                    if (Peek() == '=')
+                    if (NextChar == '=')
                     {
-                        Advance();
-                        Advance();
+                        Advance(2);
                         return new Token(TokenType.Equal, null, _lineNumber, _column);
                     }
                     break;
                 case '>':
-                    if (Peek() == '=')
+                    if (NextChar == '=')
                     {
-                        Advance();
-                        Advance();
+                        Advance(2);
                         return new Token(TokenType.GreaterEqual, null, _lineNumber, _column);
                     }
                     Advance();
                     return new Token(TokenType.Greater, null, _lineNumber, _column);
                 case '<':
-                    if (Peek() == '=')
+                    if (NextChar == '=')
                     {
-                        Advance();
-                        Advance();
+                        Advance(2);
                         return new Token(TokenType.LessEqual, null, _lineNumber, _column);
                     }
                     Advance();
                     return new Token(TokenType.Less, null, _lineNumber, _column);
                 case '!':
-                    if (Peek() == '=')
+                    if (NextChar == '=')
                     {
-                        Advance();
-                        Advance();
+                        Advance(2);
                         return new Token(TokenType.NotEqual, null, _lineNumber, _column);
                     }
                     Advance();
                     return new Token(TokenType.Not, null, _lineNumber, _column);
                 case '&':
-                    if (Peek() == '&')
+                    if (NextChar == '&')
                     {
-                        Advance();
-                        Advance();
+                        Advance(2);
                         return new Token(TokenType.And, null, _lineNumber, _column);
                     }
                     break;
                 case '|':
-                    if (Peek() == '|')
+                    if (NextChar == '|')
                     {
-                        Advance();
-                        Advance();
+                        Advance(2);
                         return new Token(TokenType.Or, null, _lineNumber, _column);
                     }
                     break;
@@ -207,13 +193,7 @@ namespace Interpreter
 
         private Token GetId()
         {
-            var result = string.Empty;
-
-            while ((char.IsLetterOrDigit(CurrentChar) || CurrentChar == '_') && CurrentChar != char.MaxValue)
-            {
-                result += CurrentChar;
-                Advance();
-            }
+            var result = GetLexeme(() => char.IsLetterOrDigit(CurrentChar) || CurrentChar == '_');
 
             if (ReserverKeywords.ContainsKey(result))
             {
@@ -225,13 +205,7 @@ namespace Interpreter
 
         private Token GetNumber()
         {
-            var result = string.Empty;
-
-            while ((char.IsDigit(CurrentChar) || CurrentChar == '.') && CurrentChar != char.MaxValue)
-            {
-                result += CurrentChar;
-                Advance();
-            }
+            var result = GetLexeme(() => char.IsLetterOrDigit(CurrentChar) || CurrentChar == '.');
 
             return new Token(TokenType.ConstNumber, result, _lineNumber, _column);
         }
@@ -240,17 +214,24 @@ namespace Interpreter
         {
             Advance(); // Beggining "
 
-            var result = string.Empty;
-
-            while ((char.IsLetterOrDigit(CurrentChar) || CurrentChar == '_') && CurrentChar != char.MaxValue)
-            {
-                result += CurrentChar;
-                Advance();
-            }
+            var value = GetLexeme(() => char.IsLetterOrDigit(CurrentChar) || CurrentChar == '_');
 
             Advance(); // finishing "
 
-            return new Token(TokenType.ConstString, result, _lineNumber, _column);
+            return new Token(TokenType.ConstString, value, _lineNumber, _column);
+        }
+
+        private string GetLexeme(Func<bool> predicate)
+        {
+            var stringBuilder = new StringBuilder();
+
+            while (predicate() && CurrentCharValid)
+            {
+                stringBuilder.Append(CurrentChar);
+                Advance();
+            }
+
+            return stringBuilder.ToString();
         }
     }
 }

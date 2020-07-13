@@ -1,25 +1,27 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
+using Interpreter.LexerService;
 
 namespace Interpreter
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             Logger.CreateLogger(args);
 
             if (args.Length > 0)
             {
-                InterpretFile(args[0]);
+                await InterpretFile(args[0]);
             }
         }
 
-        private static void InterpretFile(string file)
+        private static async Task InterpretFile(string file)
         {
             if(File.Exists(file))
             {
-                var fileContent = File.ReadAllText(file);
+                var fileContent = await File.ReadAllTextAsync(file);
 
                 Process(fileContent);
             }

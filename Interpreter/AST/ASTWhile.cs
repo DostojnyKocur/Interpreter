@@ -1,4 +1,4 @@
-﻿using Interpreter.Tokens;
+﻿using Interpreter.LexerService.Tokens;
 
 namespace Interpreter.AST
 {
@@ -6,7 +6,6 @@ namespace Interpreter.AST
     {
         public ASTWhile(Token token, ASTNode condition, ASTNode body) => (Token, Condition, Body) = (token, condition, body);
 
-        public Token Token { get; }
         public ASTNode Condition { get; }
         public ASTNode Body { get; }
     }

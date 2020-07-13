@@ -1,19 +1,18 @@
 ﻿using System.Collections.Generic;
-using Interpreter.Tokens;
+using Interpreter.LexerService.Tokens;
 
 namespace Interpreter.AST
 {
     public class ASTFunctionDefinition : ASTNode
     {
-        public ASTFunctionDefinition(ASTType returnType, Token name, List<ASTParam> parameterList, ASTCompound body)
+        public ASTFunctionDefinition(Token token, ASTType returnType, List<ASTParam> parameterList, ASTCompound body)
         {
             ReturnType = returnType;
-            Name = name;
+            Token = token;
             Body = body;
             Parameters.AddRange(parameterList);
         }
 
-        public Token Name { get; }
         public ASTType ReturnType { get; }
         public List<ASTParam> Parameters { get; } = new List<ASTParam>();
         public ASTCompound Body { get; }

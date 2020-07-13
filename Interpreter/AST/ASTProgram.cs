@@ -1,15 +1,13 @@
-﻿using Interpreter.Symbols;
-using Interpreter.Tokens;
+﻿using Interpreter.LexerService.Tokens;
+using Interpreter.Symbols;
 
 namespace Interpreter.AST
 {
     public class ASTProgram : ASTNode
     {
-        public ASTProgram(ASTNode root, Token token) => (Root, Token) = (root, token);
+        public ASTProgram(Token token, ASTNode root) => (Token, Root) = (token, root);
 
         public ASTNode Root { get; }
-        public Token Token { get; }
-
         public SymbolFunction MainFunction { get; set; }
     }
 }

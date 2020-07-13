@@ -1,12 +1,11 @@
-﻿using Interpreter.Tokens;
+﻿using Interpreter.LexerService.Tokens;
 
 namespace Interpreter.AST
 {
-    public class ASTType
+    public class ASTType : ASTNode
     {
         public ASTType(Token token) => (Token) = (token);
 
-        public Token Token { get; }
         public string Name => Token.Value;
     }
 }

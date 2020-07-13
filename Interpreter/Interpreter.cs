@@ -1,26 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using Interpreter.AST;
+using Interpreter.LexerService.Tokens;
 using Interpreter.Memory;
-using Interpreter.Tokens;
 
 namespace Interpreter
 {
     public class Interpreter
     {
-        private enum ControlType
-        {
-            None,
-            Break,
-            Continue,
-            Return
-        }
-        private class VisitResult
-        {
-            public ControlType ControlType { get; set; } = ControlType.None;
-            public dynamic Value { get; set; } = null;
-        }
-
         private readonly CallStack _callStack = new CallStack();
 
         public void Run(ASTNode tree)
@@ -90,7 +77,7 @@ namespace Interpreter
             _callStack.Push(activationRecord);
 
             var runParameters = new List<ASTNode>();
-            var mainFunction = new ASTFunctionCall("Main", runParameters, program.Token);
+            var mainFunction = new ASTFunctionCall(program.Token, "Main", runParameters);
             mainFunction.SymbolFunction = program.MainFunction;
 
             var result = Visit(mainFunction);
@@ -184,7 +171,7 @@ namespace Interpreter
         {
             var variableName = node.Variable.Name;
 
-            switch(node.Type.Token.Type)
+            switch(node.VariableType.Token.Type)
             {
                 case TokenType.TypeNumber:
                     _callStack.Top[variableName] = 0;
@@ -196,7 +183,7 @@ namespace Interpreter
                     _callStack.Top[variableName] = string.Empty;
                     break;
                 default:
-                    throw new ArgumentException($"Invalid variable type {variableName} : {node.Type.Name}");
+                    throw new ArgumentException($"Invalid variable type {variableName} : {node.VariableType.Name}");
             }
 
             
@@ -240,7 +227,7 @@ namespace Interpreter
             return new VisitResult
             {
                 ControlType = ControlType.Return,
-                Value = node.Expression != null ? Visit(node.Expression).Value : null
+                Value = node.Condition != null ? Visit(node.Condition).Value : null
             };
         }
 

@@ -1,14 +1,12 @@
 ﻿using Interpreter.Extensions;
-using Interpreter.Tokens;
+using Interpreter.LexerService.Tokens;
 
 namespace Interpreter.AST
 {
     public class ASTNumber : ASTNode
     {
-        private readonly Token _token;
+        public ASTNumber(Token token) => (Token) = (token);
 
-        public ASTNumber(Token token) => (_token) = (token);
-
-        public double Value => _token.Value.ToNumber(); 
+        public double Value => Token.Value.ToNumber(); 
     }
 }

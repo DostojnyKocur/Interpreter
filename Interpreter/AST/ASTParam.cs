@@ -2,10 +2,9 @@
 {
     public class ASTParam : ASTNode
     {
-        public ASTParam(ASTType type, ASTVariable variable) => (Type, Variable) = (type, variable);
+        public ASTParam(ASTType type, ASTVariable variable) => (Token, VariableType, Variable) = (type.Token, type, variable);
         
-        public ASTType Type { get; }
-
+        public ASTType VariableType { get; }
         public ASTVariable Variable { get; }
     }
 }

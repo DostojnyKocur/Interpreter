@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Interpreter.AST;
 using Interpreter.Errors;
-using Interpreter.Tokens;
+using Interpreter.LexerService;
+using Interpreter.LexerService.Tokens;
 
 namespace Interpreter
 {
@@ -13,10 +14,10 @@ namespace Interpreter
         private static readonly TokenType[] FactorOperators = { TokenType.Multiplication, TokenType.Divide, TokenType.Modulo };
         private static readonly TokenType[] CompareOperators = { TokenType.Equal, TokenType.NotEqual, TokenType.Greater, TokenType.GreaterEqual, TokenType.Less, TokenType.LessEqual };
 
-        private readonly Lexer _lexer;
+        private readonly ILexer _lexer;
         private Token _currentToken = null;
 
-        public Parser(Lexer lexer)
+        public Parser(ILexer lexer)
         {
             _lexer = lexer;
             _currentToken = _lexer.GetNextToken();
@@ -35,8 +36,7 @@ namespace Interpreter
 
         private ASTProgram Program()
         {
-            var token = _currentToken;
-            return new ASTProgram(Statement(), token);
+            return new ASTProgram(_currentToken, Statement());
         }
 
         private ASTCompound CompoundStatement()
@@ -389,7 +389,7 @@ namespace Interpreter
         {
             var argumentList = ParameterList();
             var body = CompoundStatement();
-            return new ASTFunctionDefinition(returnType, name, argumentList, body);
+            return new ASTFunctionDefinition(name, returnType, argumentList, body);
         }
 
         private List<ASTParam> ParameterList()
@@ -441,7 +441,7 @@ namespace Interpreter
 
             Eat(TokenType.RightParen);
 
-            return new ASTFunctionCall(functionName, actualParameters, idToken);
+            return new ASTFunctionCall(idToken, functionName, actualParameters);
         }
 
         private ASTVariablesDeclarations VariablesDeclarations(ASTType type = null, ASTVariable firstVariable = null)
@@ -467,7 +467,7 @@ namespace Interpreter
 
             foreach(var variable in variables)
             {
-                result.Add(new ASTVariableDeclaration(variable, variableType));
+                result.Add(new ASTVariableDeclaration(variableType, variable));
             }
 
             return new ASTVariablesDeclarations(result);

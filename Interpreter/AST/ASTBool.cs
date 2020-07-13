@@ -1,14 +1,12 @@
 ﻿using Interpreter.Extensions;
-using Interpreter.Tokens;
+using Interpreter.LexerService.Tokens;
 
 namespace Interpreter.AST
 {
     public class ASTBool : ASTNode
     {
-        private readonly Token _token;
+        public ASTBool(Token token) => (Token) = (token);
 
-        public ASTBool(Token token) => (_token) = (token);
-
-        public bool Value => _token.Value.ToBool();
+        public bool Value => Token.Value.ToBool();
     }
 }

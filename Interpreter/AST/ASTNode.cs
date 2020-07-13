@@ -1,6 +1,10 @@
-﻿namespace Interpreter.AST
+﻿using Interpreter.LexerService.Tokens;
+
+namespace Interpreter.AST
 {
-    public interface ASTNode
+    public abstract class ASTNode
     {
+        public Token Token { get; protected set; }
+        public TokenType Type => Token.Type;
     }
 }

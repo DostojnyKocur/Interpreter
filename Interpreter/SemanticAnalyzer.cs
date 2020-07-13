@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Linq;
 using Interpreter.AST;
 using Interpreter.Errors;
+using Interpreter.LexerService.Tokens;
 using Interpreter.Symbols;
-using Interpreter.Tokens;
 
 namespace Interpreter
 {
@@ -159,7 +158,7 @@ namespace Interpreter
 
         private void VisitVariableDeclaration(ASTVariableDeclaration node)
         {
-            var typeName = node.Type.Name;
+            var typeName = node.VariableType.Name;
             var typeSymbol = _currentScope.Lookup(typeName);
 
             var variableName = node.Variable.Name;
@@ -205,12 +204,12 @@ namespace Interpreter
             var typeName = node.ReturnType.Name;
             var typeSymbol = _currentScope.Lookup(typeName);
 
-            var functionName = node.Name.Value;
+            var functionName = node.Token.Value;
             var functionSymbol = new SymbolFunction(functionName, typeSymbol);
 
             if (_currentScope.Lookup(functionName, true) != null)
             {
-                ThrowSemanticException(ErrorCode.DuplicateIdentifier, node.Name);
+                ThrowSemanticException(ErrorCode.DuplicateIdentifier, node.Token);
             }
 
             _currentScope.Define(functionSymbol);
@@ -223,7 +222,7 @@ namespace Interpreter
             foreach (var param in node.Parameters)
             {
                 var paramName = param.Variable.Name;
-                var paramType = _currentScope.Lookup(param.Type.Name);
+                var paramType = _currentScope.Lookup(param.VariableType.Name);
                 var paramSymbol = new SymbolVariable(paramName, paramType);
 
                 if (_currentScope.Lookup(paramName, true) != null)
@@ -239,7 +238,7 @@ namespace Interpreter
 
             if (typeName != "void" && !HasReturnStatement(node.Body))
             {
-                ThrowSemanticException(ErrorCode.MissingReturnStatement, node.Name);
+                ThrowSemanticException(ErrorCode.MissingReturnStatement, node.Token);
             }
 
             functionSymbol.Body = node.Body;
@@ -277,9 +276,9 @@ namespace Interpreter
 
         private void VisitReturnStatement(ASTReturn node)
         {
-            if (node.Expression != null)
+            if (node.Condition != null)
             {
-                Visit(node.Expression);
+                Visit(node.Condition);
             }
         }
 

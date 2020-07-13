@@ -1,5 +1,5 @@
 ﻿using System;
-using Interpreter.Tokens;
+using Interpreter.LexerService.Tokens;
 
 namespace Interpreter.Errors
 {
