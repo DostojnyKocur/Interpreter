@@ -11,6 +11,7 @@ namespace Interpreter.Errors
         WrongParamNumber,
         MissingReturnStatement,
         IncorrectType,
+        InvalidIdentifier
     }
 
     public static class ErrorCodes
@@ -23,7 +24,8 @@ namespace Interpreter.Errors
             { ErrorCode.DuplicateIdentifier, "Duplicate identifier found" },
             { ErrorCode.WrongParamNumber, "Wrong number of arguments" },
             { ErrorCode.MissingReturnStatement, "Missing return statement" },
-            { ErrorCode.IncorrectType, "Incorrect type" }
+            { ErrorCode.IncorrectType, "Incorrect type" },
+            { ErrorCode.InvalidIdentifier, "Invalid identifier" }
         };
     }
 }

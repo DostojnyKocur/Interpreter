@@ -14,6 +14,7 @@ namespace Interpreter
             { "void",  new Token(TokenType.TypeVoid, "void") },
             { "number",  new Token(TokenType.TypeNumber, "number") },
             { "bool",  new Token(TokenType.TypeBool, "bool") },
+            { "string",  new Token(TokenType.TypeString, "string") },
             { "true",  new Token(TokenType.ConstBool, "true") },
             { "false",  new Token(TokenType.ConstBool, "false") },
             { "if",  new Token(TokenType.If, "if") },
@@ -48,6 +49,11 @@ namespace Interpreter
                 if (char.IsLetterOrDigit(CurrentChar))
                 {
                     return GetId();
+                }
+
+                if(CurrentChar == '\"')
+                {
+                    return GetString();
                 }
 
                 if (CurrentChar == '/')
@@ -228,6 +234,23 @@ namespace Interpreter
             }
 
             return new Token(TokenType.ConstNumber, result, _lineNumber, _column);
+        }
+
+        private Token GetString()
+        {
+            Advance(); // Beggining "
+
+            var result = string.Empty;
+
+            while ((char.IsLetterOrDigit(CurrentChar) || CurrentChar == '_') && CurrentChar != char.MaxValue)
+            {
+                result += CurrentChar;
+                Advance();
+            }
+
+            Advance(); // finishing "
+
+            return new Token(TokenType.ConstString, result, _lineNumber, _column);
         }
     }
 }

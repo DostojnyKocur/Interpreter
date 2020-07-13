@@ -22,9 +22,11 @@ expression					:	term ((PLUS | MINUS) term)*
 								| condition
 term						:	factor ((MUL | DIV | MOD) factor)*
 factor						:	(PLUS | MINUS) factor 
-								| NUMBER_CONST 
 								| LPAREN expression RPAREN 
 								| function_call
+								| NUMBER_CONST 
+								| BOOL_CONST
+								| STRING_CONST
 condition					: 	or_condition
 or_condition				:	and_condition (OR and_condition)*
 and_condition				:	not_condition (AND not_condition)*
@@ -42,4 +44,5 @@ variable_declaration		:	type_specification ID (COMMA ID)* SEMI
 variable					:	ID
 type_specification			:	NUMBER 
 								| BOOL
+								| STRING
 empty						:

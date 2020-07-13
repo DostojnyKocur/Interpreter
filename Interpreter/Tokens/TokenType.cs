@@ -4,11 +4,13 @@ namespace Interpreter.Tokens
 {
     public enum TokenType
     {
+        TypeVoid,
         TypeNumber,
         TypeBool,
-        TypeVoid,
+        TypeString,
         ConstNumber,
         ConstBool,
+        ConstString,
 
         If,
         Else,

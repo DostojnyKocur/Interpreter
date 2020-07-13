@@ -74,9 +74,10 @@ namespace Interpreter
                     return CompoundStatement();
                 case TokenType.Id:
                     return StatementAssignmentFunctionCall();
+                case TokenType.TypeVoid:
                 case TokenType.TypeNumber:
                 case TokenType.TypeBool:
-                case TokenType.TypeVoid:
+                case TokenType.TypeString:
                     return StatementDeclarationsDefinitionsAssignments();
                 case TokenType.Return:
                     return ReturnStatement();
@@ -359,6 +360,9 @@ namespace Interpreter
                 case TokenType.ConstBool:
                     Eat(TokenType.ConstBool);
                     return new ASTBool(token);
+                case TokenType.ConstString:
+                    Eat(TokenType.ConstString);
+                    return new ASTString(token);
                 case TokenType.LeftParen:
                     Eat(TokenType.LeftParen);
                     var node = Expression();

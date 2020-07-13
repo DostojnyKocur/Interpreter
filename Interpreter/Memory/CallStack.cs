@@ -22,7 +22,7 @@ namespace Interpreter.Memory
 
         public override string ToString()
         {
-            var stringBuilder = new StringBuilder("==== CALL STACK ====");
+            var stringBuilder = new StringBuilder($"{Environment.NewLine}==== CALL STACK ====");
             stringBuilder.Append(Environment.NewLine);
             foreach (var record in _stack.ToArray())
             {

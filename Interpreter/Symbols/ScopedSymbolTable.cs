@@ -12,7 +12,7 @@ namespace Interpreter.Symbols
             { "bool", new Symbol("bool") }
         };
 
-        public ScopedSymbolTable(string scopeName, uint scopeLevel, ScopedSymbolTable enclosingScope = null) 
+        public ScopedSymbolTable(string scopeName, uint scopeLevel, ScopedSymbolTable enclosingScope = null)
             => (Name, Level, EnclosingScope) = (scopeName, scopeLevel, enclosingScope);
 
         public string Name { get; }
@@ -25,7 +25,7 @@ namespace Interpreter.Symbols
         {
             Logger.DebugScope(Environment.NewLine);
             var enclosingScopeName = EnclosingScope != null ? EnclosingScope.Name : "none";
-            Logger.DebugScope($"==== SYMBOL TABLE ({Name} : level {Level} : enclosing scope : {enclosingScopeName}) ====");
+            Logger.DebugScope($"{Environment.NewLine}==== SYMBOL TABLE ({Name} : level {Level} : enclosing scope : {enclosingScopeName}) ====");
             foreach (var entry in _symbols)
             {
                 Logger.DebugScope(string.Format("{0, 20}\t:\t{1, -30}", entry.Key.Trim(), entry.Value));

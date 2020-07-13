@@ -44,6 +44,8 @@ namespace Interpreter
                     return VisitNumber(number);
                 case ASTBool @bool:
                     return VisitBool(@bool);
+                case ASTString @string:
+                    return VisitString(@string);
                 case ASTBinaryOperator binaryOperator:
                     return VisitBinaryOperator(binaryOperator);
                 case ASTUnaryOperator unaryOperator:
@@ -151,6 +153,15 @@ namespace Interpreter
             };
         }
 
+        private VisitResult VisitString(ASTString node)
+        {
+            return new VisitResult
+            {
+                ControlType = ControlType.Return,
+                Value = node.Value
+            };
+        }
+
         private void VisitEmpty(ASTEmpty node)
         {
             return;
@@ -180,6 +191,9 @@ namespace Interpreter
                     break;
                 case TokenType.TypeBool:
                     _callStack.Top[variableName] = false;
+                    break;
+                case TokenType.TypeString:
+                    _callStack.Top[variableName] = string.Empty;
                     break;
                 default:
                     throw new ArgumentException($"Invalid variable type {variableName} : {node.Type.Name}");

@@ -53,6 +53,9 @@ namespace Interpreter
                 case ASTBool @bool:
                     VisitBool(@bool);
                     break;
+                case ASTString @string:
+                    VisitString(@string);
+                    break;
                 case ASTAssign assign:
                     VisitAssign(assign);
                     break;
@@ -91,6 +94,11 @@ namespace Interpreter
         }
 
         private void VisitBool(ASTBool node)
+        {
+            return;
+        }
+
+        private void VisitString(ASTString node)
         {
             return;
         }

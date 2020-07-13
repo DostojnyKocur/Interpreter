@@ -13,6 +13,8 @@
 	{
 		number factorial = Factorial(5);
 		
+		string str = "test";
+		
 		return 0;
 	}
 }
