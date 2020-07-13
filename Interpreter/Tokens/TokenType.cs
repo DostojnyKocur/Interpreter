@@ -31,7 +31,10 @@ namespace Interpreter.Tokens
         LessEqual,
 
         Id,
+
         Return,
+        Break,
+        Continue,
 
         ScopeBegin,
         ScopeEnd,

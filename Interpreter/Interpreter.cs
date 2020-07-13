@@ -8,10 +8,17 @@ namespace Interpreter
 {
     public class Interpreter
     {
+        private enum ControlType
+        {
+            None,
+            Break,
+            Continue,
+            Return
+        }
         private class VisitResult
         {
-            public bool IsReturned { get; set; }
-            public dynamic Value { get; set; }
+            public ControlType ControlType { get; set; } = ControlType.None;
+            public dynamic Value { get; set; } = null;
         }
 
         private readonly CallStack _callStack = new CallStack();
@@ -61,6 +68,10 @@ namespace Interpreter
                     return VisitFunctionCall(functionCall);
                 case ASTReturn returnStatement:
                     return VisitReturnStatement(returnStatement);
+                case ASTBreak breakStatement:
+                    return VisitBreakStatement(breakStatement);
+                case ASTContinue continueStatement:
+                    return VisitContinueStatement(continueStatement);
                 case ASTIfElse ifElseStatement:
                     return VisitIfElseStatement(ifElseStatement);
                 case ASTWhile whileStatement:
@@ -117,7 +128,7 @@ namespace Interpreter
         {
             return new VisitResult
             {
-                IsReturned = true,
+                ControlType = ControlType.Return,
                 Value = _callStack.Top[node.Name]
             };
         }
@@ -126,7 +137,7 @@ namespace Interpreter
         {
             return new VisitResult
             {
-                IsReturned = true,
+                ControlType = ControlType.Return,
                 Value = node.Value
             };
         }
@@ -135,7 +146,7 @@ namespace Interpreter
         {
             return new VisitResult
             {
-                IsReturned = true,
+                ControlType = ControlType.Return,
                 Value = node.Value
             };
         }
@@ -214,8 +225,24 @@ namespace Interpreter
         {
             return new VisitResult
             {
-                IsReturned = true,
+                ControlType = ControlType.Return,
                 Value = node.Expression != null ? Visit(node.Expression).Value : null
+            };
+        }
+
+        private VisitResult VisitBreakStatement(ASTBreak node)
+        {
+            return new VisitResult
+            {
+                ControlType = ControlType.Break
+            };
+        }
+
+        private VisitResult VisitContinueStatement(ASTContinue node)
+        {
+            return new VisitResult
+            {
+                ControlType = ControlType.Continue
             };
         }
 
@@ -225,7 +252,7 @@ namespace Interpreter
             if (condition)
             {
                 var result = Visit(node.IfTrue);
-                if (result != null && result.IsReturned)
+                if (result != null && result.ControlType != ControlType.None)
                 {
                     return result;
                 }
@@ -233,7 +260,7 @@ namespace Interpreter
             else if (node.Else != null)
             {
                 var result = Visit(node.Else);
-                if (result != null && result.IsReturned)
+                if (result != null && result.ControlType != ControlType.None)
                 {
                     return result;
                 }
@@ -248,10 +275,17 @@ namespace Interpreter
             while (condition)
             {
                 var result = Visit(node.Body);
-                if (result != null && result.IsReturned)
+                if (result != null)
                 {
-                    return result;
+                    switch(result.ControlType)
+                    {
+                        case ControlType.Return:
+                            return result;
+                        case ControlType.Break:
+                            return null;
+                    }
                 }
+
                 condition = Visit(node.Condition).Value;
             }
 
@@ -262,16 +296,28 @@ namespace Interpreter
         {
             foreach (var child in node.Children)
             {
-                if (child is ASTReturn)
+                switch(child)
                 {
-                    return new VisitResult
-                    {
-                        IsReturned = true,
-                        Value = Visit(child).Value
-                    };
+                    case ASTReturn _:
+                        return new VisitResult
+                        {
+                            ControlType = ControlType.Return,
+                            Value = Visit(child).Value
+                        };
+                    case ASTBreak _:
+                        return new VisitResult
+                        {
+                            ControlType = ControlType.Break
+                        };
+                    case ASTContinue _:
+                        return new VisitResult
+                        {
+                            ControlType = ControlType.Continue
+                        };
                 }
+
                 var result = Visit(child);
-                if (result != null && result.IsReturned)
+                if (result != null && result.ControlType != ControlType.None)
                 {
                     return result;
                 }

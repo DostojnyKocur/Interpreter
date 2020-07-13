@@ -68,6 +68,12 @@ namespace Interpreter
                 case ASTReturn returnStatement:
                     VisitReturnStatement(returnStatement);
                     break;
+                case ASTBreak breakStatement:
+                    VisitBreakStatement(breakStatement);
+                    break;
+                case ASTContinue continueStatement:
+                    VisitContinueStatement(continueStatement);
+                    break;
                 case ASTIfElse ifElseStatement:
                     VisitIfElseStatement(ifElseStatement);
                     break;
@@ -267,6 +273,16 @@ namespace Interpreter
             {
                 Visit(node.Expression);
             }
+        }
+
+        private void VisitBreakStatement(ASTBreak node)
+        {
+            return;
+        }
+
+        private void VisitContinueStatement(ASTContinue node)
+        {
+            return;
         }
 
         private void VisitIfElseStatement(ASTIfElse node)

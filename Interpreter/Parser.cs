@@ -80,6 +80,10 @@ namespace Interpreter
                     return StatementDeclarationsDefinitionsAssignments();
                 case TokenType.Return:
                     return ReturnStatement();
+                case TokenType.Break:
+                    return BreakStatement();
+                case TokenType.Continue:
+                    return ContinueStatement();
                 case TokenType.If:
                     return IfElseStatement();
                 case TokenType.While:
@@ -119,7 +123,7 @@ namespace Interpreter
             return new ASTWhile(token, condition, body);
         }
 
-        private ASTNode ReturnStatement()
+        private ASTReturn ReturnStatement()
         {
             var returnToken = _currentToken;
             Eat(TokenType.Return);
@@ -135,6 +139,22 @@ namespace Interpreter
                 Eat(TokenType.Semicolon);
                 return result;
             }
+        }
+
+        private ASTBreak BreakStatement()
+        {
+            var token = _currentToken;
+            Eat(TokenType.Break);
+            Eat(TokenType.Semicolon);
+            return new ASTBreak(token);
+        }
+
+        private ASTContinue ContinueStatement()
+        {
+            var token = _currentToken;
+            Eat(TokenType.Continue);
+            Eat(TokenType.Semicolon);
+            return new ASTContinue(token);
         }
 
         private ASTNode StatementAssignmentFunctionCall()

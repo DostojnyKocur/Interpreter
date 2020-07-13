@@ -9,6 +9,8 @@ namespace Interpreter
         private static readonly Dictionary<string, Token> ReserverKeywords = new Dictionary<string, Token>
         {
             { "return",  new Token(TokenType.Return, "return") },
+            { "break",  new Token(TokenType.Break, "break") },
+            { "continue",  new Token(TokenType.Continue, "continue") },
             { "void",  new Token(TokenType.TypeVoid, "void") },
             { "number",  new Token(TokenType.TypeNumber, "number") },
             { "bool",  new Token(TokenType.TypeBool, "bool") },
