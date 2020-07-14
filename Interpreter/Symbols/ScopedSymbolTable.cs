@@ -7,13 +7,20 @@ namespace Interpreter.Symbols
     {
         private readonly Dictionary<string, Symbol> _symbols = new Dictionary<string, Symbol>
         {
-            { "void", new Symbol("void") },
-            { "number", new Symbol("number") },
-            { "bool", new Symbol("bool") }
+            { "void", new SymbolBuiltinType("void") },
+            { "number", new SymbolBuiltinType("number") },
+            { "bool", new SymbolBuiltinType("bool") },
+            { "string", new SymbolBuiltinType("string") }
         };
 
         public ScopedSymbolTable(string scopeName, uint scopeLevel, ScopedSymbolTable enclosingScope = null)
-            => (Name, Level, EnclosingScope) = (scopeName, scopeLevel, enclosingScope);
+        {
+            (Name, Level, EnclosingScope) = (scopeName, scopeLevel, enclosingScope);
+
+            var printFunction = new SymbolBuiltinFunction("print", _symbols["void"]);
+            printFunction.Parameters.Add(new SymbolVariable("str", _symbols["string"]));
+            _symbols.Add("print", printFunction);
+        }
 
         public string Name { get; }
 

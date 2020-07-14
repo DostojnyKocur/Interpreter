@@ -9,17 +9,19 @@ namespace Interpreter
     {
         private static bool LogScope = false;
         private static bool LogMemory = false;
+        private static LogEventLevel LogLevel = LogEventLevel.Information;
 
         public static void CreateLogger(string[] args)
         {
             ParseArguments(args);
 
-            Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Debug()
-            .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-            .Enrich.FromLogContext()
-            .WriteTo.Console()
-            .CreateLogger();
+            var configuration = new LoggerConfiguration()
+                .MinimumLevel.Is(LogLevel)
+                .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+                .Enrich.FromLogContext()
+                .WriteTo.Console();
+
+            Log.Logger = configuration.CreateLogger();
         }
 
         public static void Debug(string message)
@@ -54,6 +56,14 @@ namespace Interpreter
             {
                 LogMemory = true;
             }
+
+            var loglevel = args.FirstOrDefault(value => value.Contains("--loglevel="));
+            if (loglevel != null)
+            {
+                loglevel = loglevel.Replace("--loglevel=", string.Empty);
+                LogLevel = (LogEventLevel)Enum.Parse(typeof(LogEventLevel), loglevel);
+            }
+
         }
     }
 }

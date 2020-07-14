@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Interpreter.AST;
 using Interpreter.LexerService.Tokens;
 using Interpreter.Memory;
+using Interpreter.Symbols;
 
 namespace Interpreter
 {
@@ -171,7 +172,7 @@ namespace Interpreter
         {
             var variableName = node.Variable.Name;
 
-            switch(node.VariableType.Token.Type)
+            switch (node.VariableType.Token.Type)
             {
                 case TokenType.TypeNumber:
                     _callStack.Top[variableName] = 0;
@@ -186,7 +187,7 @@ namespace Interpreter
                     throw new ArgumentException($"Invalid variable type {variableName} : {node.VariableType.Name}");
             }
 
-            
+
         }
 
         private void VisitFunctionDefinition(ASTFunctionDefinition node)
@@ -196,8 +197,8 @@ namespace Interpreter
 
         private VisitResult VisitFunctionCall(ASTFunctionCall functionCall)
         {
-            var functionName = functionCall.FunctionName;
             var symbolFunction = functionCall.SymbolFunction;
+            var functionName = functionCall.FunctionName;
             var formalParameters = symbolFunction.Parameters;
             var actualParameters = functionCall.ActualParameters;
 
@@ -211,7 +212,7 @@ namespace Interpreter
             Logger.Debug($"Enter {functionName}");
             _callStack.Push(activationRecord);
 
-            var result = Visit(symbolFunction.Body);
+            var result = symbolFunction is SymbolBuiltinFunction ? BuiltinFunctionCall(functionCall) : Visit(symbolFunction.Body);
 
             var returnedValue = result != null ? result.Value : "null";
             Logger.DebugMemory($"Leave {functionName}, returned value ({returnedValue})");
@@ -278,7 +279,7 @@ namespace Interpreter
                 var result = Visit(node.Body);
                 if (result != null)
                 {
-                    switch(result.ControlType)
+                    switch (result.ControlType)
                     {
                         case ControlType.Return:
                             return result;
@@ -297,7 +298,7 @@ namespace Interpreter
         {
             foreach (var child in node.Children)
             {
-                switch(child)
+                switch (child)
                 {
                     case ASTReturn _:
                         return new VisitResult
@@ -423,6 +424,28 @@ namespace Interpreter
             }
 
             throw new ArgumentException($"Invalid AST node type {node.GetType()}");
+        }
+
+        private VisitResult BuiltinFunctionCall(ASTFunctionCall functionCall)
+        {
+            var functionName = functionCall.FunctionName;
+
+            switch (functionName)
+            {
+                case "print":
+                    return PrintFunctionCall();
+            }
+
+            throw new ArgumentNullException($"Builtin function {functionName} not found");
+        }
+
+        private VisitResult PrintFunctionCall()
+        {
+            var value = _callStack.Top["str"];
+
+            Console.WriteLine($"{value}");
+
+            return null;
         }
     }
 }

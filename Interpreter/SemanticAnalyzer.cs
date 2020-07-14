@@ -261,7 +261,7 @@ namespace Interpreter
             var formalParameters = (functionSymbol as SymbolFunction).Parameters;
             var actualParameters = functionCall.ActualParameters;
 
-            if (formalParameters.Count != actualParameters.Count)
+            if ((formalParameters.Count != actualParameters.Count) && functionSymbol.Name != "print")
             {
                 ThrowSemanticException(ErrorCode.WrongParamNumber, functionCall.Token);
             }
@@ -346,7 +346,7 @@ namespace Interpreter
 
         private bool HasReturnStatement(ASTNode node)
         {
-            if(node is null)
+            if (node is null)
             {
                 return false;
             }
@@ -357,7 +357,7 @@ namespace Interpreter
                 case ASTReturn @return:
                     return true;
                 case ASTCompound compound:
-                    foreach(var children in compound.Children)
+                    foreach (var children in compound.Children)
                     {
                         result |= HasReturnStatement(children);
                     }
