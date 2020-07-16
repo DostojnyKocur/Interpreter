@@ -3,9 +3,9 @@ using Interpreter.LexerService.Tokens;
 
 namespace Interpreter.AST
 {
-    public class ASTCompound : ASTNode
+    public class ASTArrayInitialization : ASTNode
     {
-        public ASTCompound(Token token, IEnumerable<ASTNode> children) 
+        public ASTArrayInitialization(Token token, IEnumerable<ASTNode> children)
         {
             Token = token;
             Children.AddRange(children);

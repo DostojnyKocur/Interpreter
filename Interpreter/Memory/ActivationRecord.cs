@@ -38,11 +38,25 @@ namespace Interpreter.Memory
             stringBuilder.Append(Environment.NewLine);
             foreach (var member in _members)
             {
-                stringBuilder.Append(string.Format("{0,20}\t:\t{1,-30}", member.Key, member.Value));
+                stringBuilder.Append(string.Format("{0,20}\t:\t{1,-30}", member.Key, GetMemberValueAsString(member.Value)));
                 stringBuilder.Append(Environment.NewLine);
             }
 
             return stringBuilder.ToString();
+        }
+
+        private string GetMemberValueAsString(object value)
+        {
+            switch(value)
+            {
+                case IEnumerable<dynamic> enumerable:
+                    var stringBuilder = new StringBuilder("[");
+                    stringBuilder.Append(string.Join(", ", enumerable));
+                    stringBuilder.Append("]");
+                    return stringBuilder.ToString();
+                default:
+                    return value.ToString();
+            }
         }
     }
 }

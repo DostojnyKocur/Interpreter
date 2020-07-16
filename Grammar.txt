@@ -13,17 +13,22 @@ statement					:	compound_statement
 								| empty
 assignment_statement		:	variable ASSIGN expression 
 								| variables_declarations ASSIGN expression
+								| variable ASSIGN array_initialization
+								| variables_declarations ASSIGN array_initialization
 return_statement			:	RETURN condition 
 break_statement				:	BREAK SEMI
 continue_statement			:	CONTINUE SEMI
 while_statement				:	WHILE LPAREN condition RPAREN statement
 if_statement				:	IF LPAREN condition RPAREN statement (ELSE statement)?
+array_initialization		:	LBRACKET (expression,)* RBRACKET
+index_expression			:	variable LBRACKET expression RBRACKET
 expression					:	term ((PLUS | MINUS) term)* 
 								| condition
 term						:	factor ((MUL | DIV | MOD) factor)*
 factor						:	(PLUS | MINUS) factor 
 								| LPAREN expression RPAREN 
 								| function_call
+								| index_expression
 								| NUMBER_CONST 
 								| BOOL_CONST
 								| STRING_CONST
@@ -42,7 +47,12 @@ function_call				:	ID LPAREN (expression (COMMA expression)*)? RPAREN
 variables_declarations		:	variable_declaration*
 variable_declaration		:	type_specification ID (COMMA ID)* SEMI
 variable					:	ID
-type_specification			:	NUMBER 
+non_array_specification		:	VOID
+								| NUMBER
 								| BOOL
 								| STRING
+rank_specifier				:	LBRACKET RBRACKET
+array_specification			:	non_array_specification rank_specifier+
+type_specification			:	non_array_specification
+								| array_specification
 empty						:

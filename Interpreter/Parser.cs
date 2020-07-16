@@ -26,7 +26,7 @@ namespace Interpreter
         public ASTNode Parse()
         {
             var node = Program();
-            if(_currentToken.Type != TokenType.EOF)
+            if (_currentToken.Type != TokenType.EOF)
             {
                 ThrowParsingException(ErrorCode.UnexpectedToken, _currentToken);
             }
@@ -41,10 +41,11 @@ namespace Interpreter
 
         private ASTCompound CompoundStatement()
         {
+            var token = _currentToken;
             Eat(TokenType.ScopeBegin);
             var nodes = StatementList();
             Eat(TokenType.ScopeEnd);
-            return new ASTCompound(nodes);
+            return new ASTCompound(token, nodes);
         }
 
         private IEnumerable<ASTNode> StatementList()
@@ -68,7 +69,7 @@ namespace Interpreter
 
         private ASTNode Statement()
         {
-            switch(_currentToken.Type)
+            switch (_currentToken.Type)
             {
                 case TokenType.ScopeBegin:
                     return CompoundStatement();
@@ -102,7 +103,7 @@ namespace Interpreter
             var condition = Condition();
             Eat(TokenType.RightParen);
             var ifTrue = Statement();
-            if(_currentToken.Type == TokenType.Else)
+            if (_currentToken.Type == TokenType.Else)
             {
                 Eat(TokenType.Else);
                 var @else = Statement();
@@ -162,6 +163,7 @@ namespace Interpreter
         {
             var idToken = _currentToken;
             Eat(TokenType.Id);
+
             if (_currentToken.Type == TokenType.LeftParen)
             {
                 var functionCall = FunctionCall(idToken);
@@ -179,14 +181,11 @@ namespace Interpreter
 
         private ASTNode StatementDeclarationsDefinitionsAssignments()
         {
-            var typeToken = _currentToken; //type
-            Eat(typeToken.Type);
+            var type = Type();
             var idToken = _currentToken; //id
             Eat(TokenType.Id);
 
-            var type = new ASTType(typeToken);
-
-            if(_currentToken.Type == TokenType.Comma || 
+            if (_currentToken.Type == TokenType.Comma ||
                 _currentToken.Type == TokenType.Semicolon ||
                 _currentToken.Type == TokenType.Assign)
             {
@@ -205,7 +204,7 @@ namespace Interpreter
                 }
             }
 
-            if(_currentToken.Type == TokenType.LeftParen)
+            if (_currentToken.Type == TokenType.LeftParen)
             {
                 return FunctionDefinition(type, idToken);
             }
@@ -214,13 +213,41 @@ namespace Interpreter
             return null;
         }
 
-        private ASTAssign AssignmentStatement(ASTNode leftNode = null)
+        private ASTAssign AssignmentStatement(ASTNode leftNode)
         {
-            var left = leftNode ?? Variable();
             var token = _currentToken;
             Eat(TokenType.Assign);
-            var right = Expression();
-            return new ASTAssign(left, token, right);
+            var right = _currentToken.Type == TokenType.LeftBracket ? ArrayInitialization() : Expression();
+            return new ASTAssign(leftNode, token, right);
+        }
+
+        private ASTArrayInitialization ArrayInitialization()
+        {
+            var token = _currentToken;
+            Eat(TokenType.LeftBracket);
+
+            var items = new List<ASTNode>();
+
+            while (_currentToken.Type != TokenType.RigthBracket)
+            {
+                items.Add(Expression());
+                if (_currentToken.Type == TokenType.Comma)
+                {
+                    Eat(TokenType.Comma);
+                }
+            }
+
+            Eat(TokenType.RigthBracket);
+
+            return new ASTArrayInitialization(token, items);
+        }
+
+        private ASTIndexExpression IndexExpression(ASTVariable variable)
+        {
+            Eat(TokenType.LeftBracket);
+            var node = new ASTIndexExpression(variable.Token, variable, Expression());
+            Eat(TokenType.RigthBracket);
+            return node;
         }
 
         private ASTNode Expression()
@@ -272,7 +299,7 @@ namespace Interpreter
         {
             var node = NotCondition();
 
-            while(_currentToken.Type == TokenType.And)
+            while (_currentToken.Type == TokenType.And)
             {
                 var token = _currentToken;
 
@@ -287,7 +314,7 @@ namespace Interpreter
         private ASTNode NotCondition()
         {
 
-            if(_currentToken.Type == TokenType.Not)
+            if (_currentToken.Type == TokenType.Not)
             {
                 var token = _currentToken;
                 Eat(TokenType.Not);
@@ -305,7 +332,7 @@ namespace Interpreter
 
         private ASTNode Comparision()
         {
-            if(_currentToken.Type == TokenType.ConstBool)
+            if (_currentToken.Type == TokenType.ConstBool)
             {
                 var token = _currentToken;
                 Eat(TokenType.ConstBool);
@@ -315,7 +342,7 @@ namespace Interpreter
 
             var node = Expression();
 
-            while(CompareOperators.Contains(_currentToken.Type))
+            while (CompareOperators.Contains(_currentToken.Type))
             {
                 var token = _currentToken;
                 Eat(token.Type);
@@ -369,16 +396,17 @@ namespace Interpreter
                     Eat(TokenType.RightParen);
                     return node;
                 case TokenType.Id:
-                    if (_lexer.CurrentChar == '(')
+                    switch (_lexer.CurrentChar)
                     {
-                        Eat(TokenType.Id);
-                        return FunctionCall(token);
+                        case '(':
+                            Eat(TokenType.Id);
+                            return FunctionCall(token);
+                        case '[':
+                            Eat(TokenType.Id);
+                            return IndexExpression(new ASTVariable(token));
                     }
-                    else
-                    {
-                        Eat(TokenType.Id);
-                        return new ASTVariable(token);
-                    }
+                    Eat(TokenType.Id);
+                    return new ASTVariable(token);
             }
 
             ThrowParsingException(ErrorCode.UnexpectedToken, _currentToken);
@@ -426,12 +454,12 @@ namespace Interpreter
 
             Eat(TokenType.LeftParen);
 
-            if(_currentToken.Type != TokenType.RightParen)
+            if (_currentToken.Type != TokenType.RightParen)
             {
                 var node = Expression();
                 actualParameters.Add(node);
 
-                while(_currentToken.Type == TokenType.Comma)
+                while (_currentToken.Type == TokenType.Comma)
                 {
                     Eat(TokenType.Comma);
                     var anotherParam = Expression();
@@ -448,7 +476,7 @@ namespace Interpreter
         {
             var variableType = type ?? Type();
 
-            if(variableType.Name == "void")
+            if (variableType.Name == "void")
             {
                 ThrowParsingException(ErrorCode.IncorrectType, variableType.Token);
             }
@@ -457,7 +485,7 @@ namespace Interpreter
 
             variables.Add(firstVariable ?? Variable());
 
-            while(_currentToken.Type == TokenType.Comma)
+            while (_currentToken.Type == TokenType.Comma)
             {
                 Eat(TokenType.Comma);
                 variables.Add(Variable());
@@ -465,7 +493,7 @@ namespace Interpreter
 
             var result = new List<ASTVariableDeclaration>();
 
-            foreach(var variable in variables)
+            foreach (var variable in variables)
             {
                 result.Add(new ASTVariableDeclaration(variableType, variable));
             }
@@ -482,9 +510,31 @@ namespace Interpreter
 
         private ASTType Type()
         {
-            var node = new ASTType(_currentToken);
-            Eat(TokenType.TypeNumber);
-            return node;
+            ASTNode type;
+            var nonArrayType = NonArrayType();
+            type = nonArrayType;
+
+            if (_currentToken.Type == TokenType.LeftBracket)
+            {
+                type = ArrayType(nonArrayType);
+            }
+
+            return new ASTType(type.Token, type);
+        }
+
+        private ASTNonArrayType NonArrayType()
+        {
+            var token = _currentToken;
+            Eat(token.Type);
+            return new ASTNonArrayType(token);
+        }
+
+        private ASTArrayType ArrayType(ASTNonArrayType type)
+        {
+            var rank = new ASTRankSpec(_currentToken);
+            Eat(TokenType.LeftBracket);
+            Eat(TokenType.RigthBracket);
+            return new ASTArrayType(type.Token, type, rank);
         }
 
         private ASTEmpty Empty()

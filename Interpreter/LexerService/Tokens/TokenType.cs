@@ -42,6 +42,8 @@ namespace Interpreter.LexerService.Tokens
         ScopeEnd,
         LeftParen,
         RightParen,
+        LeftBracket,
+        RigthBracket,
         Assign,
         Semicolon,
         Comma,
@@ -61,6 +63,8 @@ namespace Interpreter.LexerService.Tokens
             { ')', TokenType.RightParen },
             { '{', TokenType.ScopeBegin },
             { '}', TokenType.ScopeEnd },
+            { '[', TokenType.LeftBracket },
+            { ']', TokenType.RigthBracket },
             { '=', TokenType.Assign },
             { ';', TokenType.Semicolon },
             { ',', TokenType.Comma }

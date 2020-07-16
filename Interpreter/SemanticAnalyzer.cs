@@ -46,6 +46,12 @@ namespace Interpreter
                 case ASTVariableDeclaration variableDeclaration:
                     VisitVariableDeclaration(variableDeclaration);
                     break;
+                case ASTArrayInitialization arrayInitialization:
+                    VisitArrayInitialization(arrayInitialization);
+                    break;
+                case ASTIndexExpression indexExpression:
+                    VisitIndexExpression(indexExpression);
+                    break;
                 case ASTNumber number:
                     VisitNumber(number);
                     break;
@@ -170,6 +176,20 @@ namespace Interpreter
             }
 
             _currentScope.Define(variableSymbol);
+        }
+
+        private void VisitArrayInitialization(ASTArrayInitialization node)
+        {
+            foreach (var item in node.Children)
+            {
+                Visit(item);
+            }
+        }
+
+        private void VisitIndexExpression(ASTIndexExpression node)
+        {
+            Visit(node.Variable);
+            Visit(node.Expression);
         }
 
         private void VisitAssign(ASTAssign node)

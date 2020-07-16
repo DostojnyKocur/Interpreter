@@ -33,7 +33,7 @@ namespace Interpreter
         {
             if (LogScope)
             {
-                Log.Logger.Debug(message);
+                Log.Logger.Information(message);
             }
         }
 
@@ -41,7 +41,7 @@ namespace Interpreter
         {
             if (LogMemory)
             {
-                Log.Logger.Debug(message);
+                Log.Logger.Information(message);
             }
         }
 

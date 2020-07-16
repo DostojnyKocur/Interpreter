@@ -51,6 +51,10 @@ namespace Interpreter
                 case ASTVariableDeclaration variableDeclaration:
                     VisitVariableDeclaration(variableDeclaration);
                     return null;
+                case ASTArrayInitialization arrayInitialization:
+                    return VisitArrayInitialization(arrayInitialization);
+                case ASTIndexExpression indexExpression:
+                    return VisitIndexExpression(indexExpression);
                 case ASTFunctionDefinition functionDefinition:
                     VisitFunctionDefinition(functionDefinition);
                     return null;
@@ -88,7 +92,7 @@ namespace Interpreter
 
             _callStack.Pop();
 
-            Logger.Debug($"Program exited with status code {result.Value}");
+            Logger.Debug($"Program exited with status code {result?.Value ?? "null"}");
 
             return result;
         }
@@ -188,6 +192,36 @@ namespace Interpreter
             }
 
 
+        }
+
+        private VisitResult VisitArrayInitialization(ASTArrayInitialization node)
+        {
+            var result = new List<dynamic>();
+
+            foreach (var item in node.Children)
+            {
+                result.Add(Visit(item).Value);
+            }
+
+            return new VisitResult
+            {
+                ControlType = ControlType.Return,
+                Value = result
+            };
+        }
+
+        private VisitResult VisitIndexExpression(ASTIndexExpression node)
+        {
+            var array = (List<dynamic>)Visit(node.Variable).Value;
+            var index = (int)Visit(node.Expression).Value;
+
+            var integreIndex = index < 0 ? array.Count + index : index;
+
+            return new VisitResult
+            {
+                ControlType = ControlType.Return,
+                Value = array[integreIndex]
+            };
         }
 
         private void VisitFunctionDefinition(ASTFunctionDefinition node)

@@ -1,23 +1,15 @@
 {
-	number Factorial(number n)
+	number Index()
 	{
-		if(n == 1)
-		{
-			return 1;
-		}
-	
-		return Factorial(n - 1) * n;
+		return -2;
 	}
 
-	number Main()
+	void Main()
 	{
-		number factorial = Factorial(5);
+		number x = 7;
+		number[] array = [2, 5 * 3, x];
 		
-		string str = "test" + "2";
-		
-		print(str);
-		
-		return 0;
+		number t = array[Index()];
 	}
 }
 
