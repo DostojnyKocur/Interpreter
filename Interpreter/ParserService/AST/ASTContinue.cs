@@ -1,9 +1,9 @@
 ﻿using Interpreter.LexerService.Tokens;
 
-namespace Interpreter.AST
+namespace Interpreter.ParserService.AST
 {
     public class ASTContinue : ASTNode
     {
-        public ASTContinue(Token token) => (Token) = (token);
+        public ASTContinue(Token token) => Token = token;
     }
 }

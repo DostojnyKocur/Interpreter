@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using Interpreter.LexerService;
+using Interpreter.ParserService;
 
 namespace Interpreter
 {

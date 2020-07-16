@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Interpreter.AST
+namespace Interpreter.ParserService.AST
 {
     public class ASTVariablesDeclarations : ASTNode
     {

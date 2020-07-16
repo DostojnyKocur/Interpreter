@@ -1,6 +1,6 @@
 ﻿using Interpreter.LexerService.Tokens;
 
-namespace Interpreter.AST
+namespace Interpreter.ParserService.AST
 {
     public class ASTType : ASTNode
     {

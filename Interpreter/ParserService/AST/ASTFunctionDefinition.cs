@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Interpreter.LexerService.Tokens;
 
-namespace Interpreter.AST
+namespace Interpreter.ParserService.AST
 {
     public class ASTFunctionDefinition : ASTNode
     {

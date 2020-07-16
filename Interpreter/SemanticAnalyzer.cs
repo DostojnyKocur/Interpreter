@@ -1,7 +1,7 @@
 ﻿using System;
-using Interpreter.AST;
 using Interpreter.Errors;
 using Interpreter.LexerService.Tokens;
+using Interpreter.ParserService.AST;
 using Interpreter.Symbols;
 
 namespace Interpreter

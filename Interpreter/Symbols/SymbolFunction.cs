@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Interpreter.AST;
+using Interpreter.ParserService.AST;
 
 namespace Interpreter.Symbols
 {

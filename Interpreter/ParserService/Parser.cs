@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Interpreter.AST;
 using Interpreter.Errors;
 using Interpreter.LexerService;
 using Interpreter.LexerService.Tokens;
+using Interpreter.ParserService.AST;
 
-namespace Interpreter
+namespace Interpreter.ParserService
 {
-    public class Parser
+    public class Parser : IParser
     {
         private static readonly TokenType[] TermOperators = { TokenType.Plus, TokenType.Minus };
         private static readonly TokenType[] FactorOperators = { TokenType.Multiplication, TokenType.Divide, TokenType.Modulo };
@@ -182,7 +182,7 @@ namespace Interpreter
         private ASTNode StatementDeclarationsDefinitionsAssignments()
         {
             var type = Type();
-            var idToken = _currentToken; //id
+            var idToken = _currentToken;
             Eat(TokenType.Id);
 
             if (_currentToken.Type == TokenType.Comma ||
@@ -476,7 +476,7 @@ namespace Interpreter
         {
             var variableType = type ?? Type();
 
-            if (variableType.Name == "void")
+            if (variableType.Token.Type == TokenType.TypeVoid)
             {
                 ThrowParsingException(ErrorCode.IncorrectType, variableType.Token);
             }

@@ -1,10 +1,10 @@
 ﻿using Interpreter.LexerService.Tokens;
 
-namespace Interpreter.AST
+namespace Interpreter.ParserService.AST
 {
     class ASTArrayType : ASTNode
     {
-        public ASTArrayType(Token token, ASTNonArrayType arrayType, ASTRankSpec rankType) 
+        public ASTArrayType(Token token, ASTNonArrayType arrayType, ASTRankSpec rankType)
             => (Token, ArrayType, RankType) = (token, arrayType, rankType);
 
         public ASTNonArrayType ArrayType { get; }

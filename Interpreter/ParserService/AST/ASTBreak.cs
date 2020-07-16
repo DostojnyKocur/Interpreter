@@ -1,9 +1,9 @@
 ﻿using Interpreter.LexerService.Tokens;
 
-namespace Interpreter.AST
+namespace Interpreter.ParserService.AST
 {
     public class ASTBreak : ASTNode
     {
-        public ASTBreak(Token token) => (Token) = (token);
+        public ASTBreak(Token token) => Token = token;
     }
 }

@@ -1,7 +1,7 @@
 ﻿using Interpreter.LexerService.Tokens;
 using Interpreter.Symbols;
 
-namespace Interpreter.AST
+namespace Interpreter.ParserService.AST
 {
     public class ASTProgram : ASTNode
     {

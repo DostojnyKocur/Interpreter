@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using Interpreter.AST;
 using Interpreter.LexerService.Tokens;
 using Interpreter.Memory;
+using Interpreter.ParserService.AST;
 using Interpreter.Symbols;
 
 namespace Interpreter

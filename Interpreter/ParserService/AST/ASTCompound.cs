@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using Interpreter.LexerService.Tokens;
 
-namespace Interpreter.AST
+namespace Interpreter.ParserService.AST
 {
-    public class ASTArrayInitialization : ASTNode
+    public class ASTCompound : ASTNode
     {
-        public ASTArrayInitialization(Token token, IEnumerable<ASTNode> children)
+        public ASTCompound(Token token, IEnumerable<ASTNode> children)
         {
             Token = token;
             Children.AddRange(children);

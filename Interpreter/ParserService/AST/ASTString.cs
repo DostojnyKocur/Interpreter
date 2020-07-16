@@ -1,10 +1,10 @@
 ﻿using Interpreter.LexerService.Tokens;
 
-namespace Interpreter.AST
+namespace Interpreter.ParserService.AST
 {
     public class ASTString : ASTNode
     {
-        public ASTString(Token token) => (Token) = (token);
+        public ASTString(Token token) => Token = token;
 
         public string Value => Token.Value;
     }
