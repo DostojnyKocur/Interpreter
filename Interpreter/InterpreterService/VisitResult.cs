@@ -1,4 +1,6 @@
-﻿namespace Interpreter
+﻿using Interpreter.InterpreterService;
+
+namespace Interpreter
 {
     public class VisitResult
     {

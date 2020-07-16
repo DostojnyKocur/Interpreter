@@ -43,8 +43,8 @@ namespace Interpreter
             var semanticAnalyzer = new SemanticAnalyzer();
             semanticAnalyzer.Analyze(tree);
 
-            var interpreter = new Interpreter();
-            interpreter.Run(tree);  
+            var interpreter = new InterpreterService.Interpreter();
+            interpreter.Interpret(tree);  
         }
     }
 }

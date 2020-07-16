@@ -1,4 +1,4 @@
-﻿namespace Interpreter
+﻿namespace Interpreter.InterpreterService
 {
     public enum ControlType
     {

@@ -5,13 +5,13 @@ using Interpreter.Memory;
 using Interpreter.ParserService.AST;
 using Interpreter.Symbols;
 
-namespace Interpreter
+namespace Interpreter.InterpreterService
 {
-    public class Interpreter
+    public class Interpreter : IInterpreter
     {
         private readonly CallStack _callStack = new CallStack();
 
-        public void Run(ASTNode tree)
+        public void Interpret(ASTNode tree)
         {
             Visit(tree);
         }
@@ -21,13 +21,11 @@ namespace Interpreter
             switch (node)
             {
                 case ASTEmpty empty:
-                    VisitEmpty(empty);
-                    return null;
+                    return VisitEmpty(empty);
                 case ASTProgram program:
                     return VisitProgram(program);
                 case ASTType type:
-                    VisitType(type);
-                    return null;
+                    return VisitType(type);
                 case ASTNumber number:
                     return VisitNumber(number);
                 case ASTBool @bool:
@@ -41,23 +39,19 @@ namespace Interpreter
                 case ASTCompound compound:
                     return VisitCompound(compound);
                 case ASTAssign assign:
-                    VisitAssign(assign);
-                    return null;
+                    return VisitAssign(assign);
                 case ASTVariable variable:
                     return VisitVariable(variable);
                 case ASTVariablesDeclarations variablesDeclarations:
-                    VisitVariablesDeclarations(variablesDeclarations);
-                    return null;
+                    return VisitVariablesDeclarations(variablesDeclarations);
                 case ASTVariableDeclaration variableDeclaration:
-                    VisitVariableDeclaration(variableDeclaration);
-                    return null;
+                    return VisitVariableDeclaration(variableDeclaration);
                 case ASTArrayInitialization arrayInitialization:
                     return VisitArrayInitialization(arrayInitialization);
                 case ASTIndexExpression indexExpression:
                     return VisitIndexExpression(indexExpression);
                 case ASTFunctionDefinition functionDefinition:
-                    VisitFunctionDefinition(functionDefinition);
-                    return null;
+                    return VisitFunctionDefinition(functionDefinition);
                 case ASTFunctionCall functionCall:
                     return VisitFunctionCall(functionCall);
                 case ASTReturn returnStatement:
@@ -97,7 +91,7 @@ namespace Interpreter
             return result;
         }
 
-        private void VisitAssign(ASTAssign node)
+        private VisitResult VisitAssign(ASTAssign node)
         {
             var value = Visit(node.Right);
 
@@ -105,14 +99,14 @@ namespace Interpreter
             {
                 case ASTVariable variable:
                     _callStack.Top[variable.Name] = value.Value;
-                    return;
+                    return null;
                 case ASTVariablesDeclarations variablesDeclarations:
                     Visit(variablesDeclarations);
                     foreach (var variable in variablesDeclarations.Children)
                     {
                         _callStack.Top[variable.Variable.Name] = value.Value;
                     }
-                    return;
+                    return null;
             }
 
             throw new ArgumentException($"Invalid AST node type {node.GetType()}");
@@ -154,44 +148,54 @@ namespace Interpreter
             };
         }
 
-        private void VisitEmpty(ASTEmpty node)
+        private VisitResult VisitEmpty(ASTEmpty node)
         {
-            return;
+            return null;
         }
 
-        private void VisitType(ASTType node)
+        private VisitResult VisitType(ASTType node)
         {
-            return;
+            return null;
         }
 
-        private void VisitVariablesDeclarations(ASTVariablesDeclarations node)
+        private VisitResult VisitVariablesDeclarations(ASTVariablesDeclarations node)
         {
             foreach (var child in node.Children)
             {
                 Visit(child);
             }
+
+            return null;
         }
 
-        private void VisitVariableDeclaration(ASTVariableDeclaration node)
+        private VisitResult VisitVariableDeclaration(ASTVariableDeclaration node)
         {
             var variableName = node.Variable.Name;
 
-            switch (node.VariableType.Token.Type)
+            switch (node.VariableType.TypeSpec)
             {
-                case TokenType.TypeNumber:
-                    _callStack.Top[variableName] = 0;
+                case ASTArrayType arrayType:
+                    _callStack.Top[variableName] = new List<dynamic>();
                     break;
-                case TokenType.TypeBool:
-                    _callStack.Top[variableName] = false;
-                    break;
-                case TokenType.TypeString:
-                    _callStack.Top[variableName] = string.Empty;
+                case ASTNonArrayType nonArrayType:
+                    switch (nonArrayType.Type)
+                    {
+                        case TokenType.TypeNumber:
+                            _callStack.Top[variableName] = 0;
+                            break;
+                        case TokenType.TypeBool:
+                            _callStack.Top[variableName] = false;
+                            break;
+                        case TokenType.TypeString:
+                            _callStack.Top[variableName] = string.Empty;
+                            break;
+                    }
                     break;
                 default:
                     throw new ArgumentException($"Invalid variable type {variableName} : {node.VariableType.Name}");
             }
 
-
+            return null;
         }
 
         private VisitResult VisitArrayInitialization(ASTArrayInitialization node)
@@ -224,9 +228,9 @@ namespace Interpreter
             };
         }
 
-        private void VisitFunctionDefinition(ASTFunctionDefinition node)
+        private VisitResult VisitFunctionDefinition(ASTFunctionDefinition node)
         {
-            return;
+            return null;
         }
 
         private VisitResult VisitFunctionCall(ASTFunctionCall functionCall)
@@ -238,7 +242,7 @@ namespace Interpreter
 
             var activationRecord = new ActivationRecord(functionName, ActivationRecordType.Function, symbolFunction.ScopeLevel + 1);
 
-            for (int i = 0; i < formalParameters.Count; ++i)
+            for (var i = 0; i < formalParameters.Count; ++i)
             {
                 activationRecord[formalParameters[i].Name] = Visit(actualParameters[i]).Value;
             }
