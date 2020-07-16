@@ -1,4 +1,6 @@
-﻿namespace Interpreter.Symbols
+﻿using Interpreter.AnalyzerService.Symbols;
+
+namespace Interpreter.Symbols
 {
     public class SymbolBuiltinType : Symbol
     {

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
+using Interpreter.AnalyzerService.Symbols;
 using Interpreter.LexerService.Tokens;
-using Interpreter.Symbols;
 
 namespace Interpreter.ParserService.AST
 {

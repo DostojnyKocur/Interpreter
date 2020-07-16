@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using Interpreter.AnalyzerService;
 using Interpreter.LexerService;
 using Interpreter.ParserService;
 
@@ -40,7 +41,7 @@ namespace Interpreter
             var tree = parser.Parse();
 
             var semanticAnalyzer = new SemanticAnalyzer();
-            semanticAnalyzer.Prepare(tree);
+            semanticAnalyzer.Analyze(tree);
 
             var interpreter = new Interpreter();
             interpreter.Run(tree);  

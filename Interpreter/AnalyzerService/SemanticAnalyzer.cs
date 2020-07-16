@@ -1,12 +1,13 @@
 ﻿using System;
+using Interpreter.AnalyzerService.Symbols;
 using Interpreter.Errors;
 using Interpreter.LexerService.Tokens;
 using Interpreter.ParserService.AST;
 using Interpreter.Symbols;
 
-namespace Interpreter
+namespace Interpreter.AnalyzerService
 {
-    public class SemanticAnalyzer
+    public class SemanticAnalyzer : ISemanticAnalyzer
     {
         private readonly ScopedSymbolTable _globalScope = new ScopedSymbolTable("global", 1);
         private ScopedSymbolTable _currentScope;
@@ -16,7 +17,7 @@ namespace Interpreter
             _currentScope.DebugPrintSymbols();
         }
 
-        public void Prepare(ASTNode node)
+        public void Analyze(ASTNode node)
         {
             Visit(node);
         }
@@ -281,7 +282,7 @@ namespace Interpreter
             var formalParameters = (functionSymbol as SymbolFunction).Parameters;
             var actualParameters = functionCall.ActualParameters;
 
-            if ((formalParameters.Count != actualParameters.Count) && functionSymbol.Name != "print")
+            if (formalParameters.Count != actualParameters.Count && functionSymbol.Name != "print")
             {
                 ThrowSemanticException(ErrorCode.WrongParamNumber, functionCall.Token);
             }
@@ -291,7 +292,7 @@ namespace Interpreter
                 Visit(param);
             }
 
-            functionCall.SymbolFunction = (functionSymbol as SymbolFunction);
+            functionCall.SymbolFunction = functionSymbol as SymbolFunction;
         }
 
         private void VisitReturnStatement(ASTReturn node)

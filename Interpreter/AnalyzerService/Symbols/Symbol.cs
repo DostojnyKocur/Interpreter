@@ -1,4 +1,4 @@
-﻿namespace Interpreter.Symbols
+﻿namespace Interpreter.AnalyzerService.Symbols
 {
     public class Symbol
     {

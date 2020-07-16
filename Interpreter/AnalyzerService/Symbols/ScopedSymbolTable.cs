@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using Interpreter.Symbols;
 
-namespace Interpreter.Symbols
+namespace Interpreter.AnalyzerService.Symbols
 {
     public class ScopedSymbolTable
     {
