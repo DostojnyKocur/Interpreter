@@ -1,4 +1,4 @@
-﻿namespace Interpreter.Memory
+﻿namespace Interpreter.InterpreterService.Memory
 {
     public enum ActivationRecordType
     {

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Interpreter.Errors
+namespace Interpreter.Common.Errors
 {
     public enum ErrorCode
     {

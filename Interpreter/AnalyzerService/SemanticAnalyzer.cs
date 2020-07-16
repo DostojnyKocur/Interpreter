@@ -1,6 +1,7 @@
 ﻿using System;
 using Interpreter.AnalyzerService.Symbols;
-using Interpreter.Errors;
+using Interpreter.Common;
+using Interpreter.Common.Errors;
 using Interpreter.LexerService.Tokens;
 using Interpreter.ParserService.AST;
 using Interpreter.Symbols;

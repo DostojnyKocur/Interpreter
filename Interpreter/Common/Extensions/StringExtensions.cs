@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Interpreter.Extensions
+namespace Interpreter.Common.Extensions
 {
     public static class StringExtensions
     {
@@ -11,7 +11,7 @@ namespace Interpreter.Extensions
 
         public static bool ToBool(this string @string)
         {
-            if(@string.ToLower() != @string)
+            if (@string.ToLower() != @string)
             {
                 throw new FormatException(@string);
             }

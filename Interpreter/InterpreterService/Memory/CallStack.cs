@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Interpreter.Memory
+namespace Interpreter.InterpreterService.Memory
 {
     public class CallStack
     {

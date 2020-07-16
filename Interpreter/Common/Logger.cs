@@ -3,7 +3,7 @@ using System.Linq;
 using Serilog;
 using Serilog.Events;
 
-namespace Interpreter
+namespace Interpreter.Common
 {
     public static class Logger
     {

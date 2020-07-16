@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Interpreter.Memory
+namespace Interpreter.InterpreterService.Memory
 {
     public class ActivationRecord
     {
@@ -19,7 +19,7 @@ namespace Interpreter.Memory
             get => _members[index];
             set
             {
-                if(!_members.ContainsKey(index))
+                if (!_members.ContainsKey(index))
                 {
                     _members.Add(index, null);
                 }
@@ -47,7 +47,7 @@ namespace Interpreter.Memory
 
         private string GetMemberValueAsString(object value)
         {
-            switch(value)
+            switch (value)
             {
                 case IEnumerable<dynamic> enumerable:
                     var stringBuilder = new StringBuilder("[");

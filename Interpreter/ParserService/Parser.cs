@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Interpreter.Errors;
+using Interpreter.Common.Errors;
 using Interpreter.LexerService;
 using Interpreter.LexerService.Tokens;
 using Interpreter.ParserService.AST;

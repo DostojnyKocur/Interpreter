@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using Interpreter.AnalyzerService;
+using Interpreter.Common;
 using Interpreter.LexerService;
 using Interpreter.ParserService;
 

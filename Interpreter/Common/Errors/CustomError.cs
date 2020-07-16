@@ -1,7 +1,7 @@
 ﻿using System;
 using Interpreter.LexerService.Tokens;
 
-namespace Interpreter.Errors
+namespace Interpreter.Common.Errors
 {
     public abstract class CustomError : Exception
     {

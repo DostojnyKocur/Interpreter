@@ -1,4 +1,4 @@
-﻿using Interpreter.Extensions;
+﻿using Interpreter.Common.Extensions;
 using Interpreter.LexerService.Tokens;
 
 namespace Interpreter.ParserService.AST

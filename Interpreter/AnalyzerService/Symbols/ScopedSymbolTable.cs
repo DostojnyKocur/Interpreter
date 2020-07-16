@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Interpreter.Common;
 using Interpreter.Symbols;
 
 namespace Interpreter.AnalyzerService.Symbols

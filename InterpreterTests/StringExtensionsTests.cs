@@ -1,5 +1,5 @@
 using System;
-using Interpreter.Extensions;
+using Interpreter.Common.Extensions;
 using NUnit.Framework;
 
 namespace InterpreterTests

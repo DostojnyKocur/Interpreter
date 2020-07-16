@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Interpreter.Errors;
+using Interpreter.Common.Errors;
 using Interpreter.LexerService.Tokens;
 
 namespace Interpreter.LexerService
