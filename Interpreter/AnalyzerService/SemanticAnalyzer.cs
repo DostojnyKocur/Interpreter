@@ -10,6 +10,8 @@ namespace Interpreter.AnalyzerService
 {
     public class SemanticAnalyzer : ISemanticAnalyzer
     {
+        private const string ArrayTypeSuffix = "_array";
+
         private readonly ScopedSymbolTable _globalScope = new ScopedSymbolTable("global", 1);
         private ScopedSymbolTable _currentScope;
 
@@ -23,99 +25,78 @@ namespace Interpreter.AnalyzerService
             Visit(node);
         }
 
-        private void Visit(ASTNode node)
+        private Symbol Visit(ASTNode node)
         {
             switch (node)
             {
                 case ASTEmpty empty:
-                    VisitEmpty(empty);
-                    break;
+                    return VisitEmpty(empty);
                 case ASTProgram program:
-                    VisitProgram(program);
-                    break;
+                    return VisitProgram(program);
                 case ASTCompound compound:
-                    VisitCompound(compound);
-                    break;
+                    return VisitCompound(compound);
                 case ASTBinaryOperator binaryOperator:
-                    VisitBinaryOperator(binaryOperator);
-                    break;
+                    return VisitBinaryOperator(binaryOperator);
                 case ASTUnaryOperator unaryOperator:
-                    VisitUnaryOperator(unaryOperator);
-                    break;
+                    return VisitUnaryOperator(unaryOperator);
                 case ASTVariablesDeclarations variablesDeclarations:
-                    VisitVariablesDeclarations(variablesDeclarations);
-                    break;
+                    return VisitVariablesDeclarations(variablesDeclarations);
                 case ASTVariableDeclaration variableDeclaration:
-                    VisitVariableDeclaration(variableDeclaration);
-                    break;
+                    return VisitVariableDeclaration(variableDeclaration);
                 case ASTArrayInitialization arrayInitialization:
-                    VisitArrayInitialization(arrayInitialization);
-                    break;
+                    return VisitArrayInitialization(arrayInitialization);
                 case ASTIndexExpression indexExpression:
-                    VisitIndexExpression(indexExpression);
-                    break;
+                    return VisitIndexExpression(indexExpression);
                 case ASTNumber number:
-                    VisitNumber(number);
-                    break;
+                    return VisitNumber(number);
                 case ASTBool @bool:
-                    VisitBool(@bool);
-                    break;
+                    return VisitBool(@bool);
                 case ASTString @string:
-                    VisitString(@string);
-                    break;
+                    return VisitString(@string);
                 case ASTAssign assign:
-                    VisitAssign(assign);
-                    break;
+                    return VisitAssign(assign);
                 case ASTVariable variable:
-                    VisitVariable(variable);
-                    break;
+                    return VisitVariable(variable);
                 case ASTFunctionDefinition functionDefinition:
-                    VisitFunctionDefinition(functionDefinition);
-                    break;
+                    return VisitFunctionDefinition(functionDefinition);
                 case ASTFunctionCall functionCall:
-                    VisitFunctionCall(functionCall);
-                    break;
+                    return VisitFunctionCall(functionCall);
                 case ASTReturn returnStatement:
-                    VisitReturnStatement(returnStatement);
-                    break;
+                    return VisitReturnStatement(returnStatement);
                 case ASTBreak breakStatement:
-                    VisitBreakStatement(breakStatement);
-                    break;
+                    return VisitBreakStatement(breakStatement);
                 case ASTContinue continueStatement:
-                    VisitContinueStatement(continueStatement);
-                    break;
+                    return VisitContinueStatement(continueStatement);
                 case ASTIfElse ifElseStatement:
-                    VisitIfElseStatement(ifElseStatement);
-                    break;
+                    return VisitIfElseStatement(ifElseStatement);
                 case ASTWhile whileStatement:
-                    VisitWhileStatement(whileStatement);
-                    break;
+                    return VisitWhileStatement(whileStatement);
                 default:
                     throw new ArgumentException($"[{nameof(SemanticAnalyzer)}] No visit method for node type {node.GetType()}");
             }
         }
 
-        private void VisitNumber(ASTNumber node)
+        private Symbol VisitNumber(ASTNumber node)
         {
-            return;
+            return _currentScope.Lookup("number");
         }
 
-        private void VisitBool(ASTBool node)
+        private Symbol VisitBool(ASTBool node)
         {
-            return;
+            return _currentScope.Lookup("bool");
         }
 
-        private void VisitString(ASTString node)
+        private Symbol VisitString(ASTString node)
         {
-            return;
+            return _currentScope.Lookup("string");
         }
 
-        private void VisitEmpty(ASTEmpty node)
+        private Symbol VisitEmpty(ASTEmpty node)
         {
-            return;
+            return null;
         }
 
-        private void VisitProgram(ASTProgram node)
+        private Symbol VisitProgram(ASTProgram node)
         {
             Logger.DebugScope("Enter scope : global");
             _currentScope = _globalScope;
@@ -135,39 +116,79 @@ namespace Interpreter.AnalyzerService
             _currentScope = _currentScope.EnclosingScope;
 
             Logger.DebugScope("Leave scope : global");
+
+            return null;
         }
 
-        private void VisitCompound(ASTCompound node)
+        private Symbol VisitCompound(ASTCompound node)
         {
+            Symbol returnType = null;
+
             foreach (var child in node.Children)
             {
-                Visit(child);
+                if (returnType is null)
+                {
+                    returnType = Visit(child);
+                }
+                else
+                {
+                    var currentType = Visit(child);
+                    if (currentType.Name != returnType.Name)
+                    {
+                        ThrowIncompatibleTypesException(child.Token, returnType.Name, currentType.Name);
+                    }
+                }
             }
+
+            return returnType;
         }
 
-        private void VisitBinaryOperator(ASTBinaryOperator node)
+        private Symbol VisitBinaryOperator(ASTBinaryOperator node)
         {
-            Visit(node.Left);
-            Visit(node.Right);
+            var leftType = Visit(node.Left);
+            var rightType = Visit(node.Right);
+
+            if (leftType != rightType)
+            {
+                ThrowIncompatibleTypesException(node.Token, leftType.Name, rightType.Name);
+            }
+
+            return leftType;
         }
 
-        private void VisitUnaryOperator(ASTUnaryOperator node)
+        private Symbol VisitUnaryOperator(ASTUnaryOperator node)
         {
-            Visit(node.Expression);
+            return Visit(node.Expression);
         }
 
-        private void VisitVariablesDeclarations(ASTVariablesDeclarations node)
+        private Symbol VisitVariablesDeclarations(ASTVariablesDeclarations node)
         {
+            Symbol variableType = null;
+
             foreach (var child in node.Children)
             {
-                Visit(child);
+                if (variableType is null)
+                {
+                    variableType = Visit(child);
+                }
+                else
+                {
+                    Visit(child);
+                }
             }
+
+            return variableType;
         }
 
-        private void VisitVariableDeclaration(ASTVariableDeclaration node)
+        private Symbol VisitVariableDeclaration(ASTVariableDeclaration node)
         {
             var typeName = node.VariableType.Name;
             var typeSymbol = _currentScope.Lookup(typeName);
+
+            if (node.VariableType.TypeSpec is ASTArrayType)
+            {
+                typeSymbol = new Symbol($"{typeName}{ArrayTypeSuffix}");
+            }
 
             var variableName = node.Variable.Name;
             var variableSymbol = new SymbolVariable(variableName, typeSymbol);
@@ -178,40 +199,78 @@ namespace Interpreter.AnalyzerService
             }
 
             _currentScope.Define(variableSymbol);
+
+            return typeSymbol;
         }
 
-        private void VisitArrayInitialization(ASTArrayInitialization node)
+        private Symbol VisitArrayInitialization(ASTArrayInitialization node)
         {
+            Symbol itemType = null;
+
             foreach (var item in node.Children)
             {
-                Visit(item);
+                if (itemType is null)
+                {
+                    itemType = Visit(item);
+                }
+                else
+                {
+                    var currentItemType = Visit(item);
+                    if (currentItemType != itemType)
+                    {
+                        ThrowIncompatibleTypesException(node.Token, itemType.Name, currentItemType.Name);
+                    }
+                }
             }
+
+            return new Symbol($"{itemType.Name}{ArrayTypeSuffix}");
         }
 
-        private void VisitIndexExpression(ASTIndexExpression node)
+        private Symbol VisitIndexExpression(ASTIndexExpression node)
         {
-            Visit(node.Variable);
-            Visit(node.Expression);
+            var variableType = Visit(node.Variable);
+            var indexType = Visit(node.Expression);
+            switch (indexType.Name)
+            {
+                case "number":
+                    var singleType = variableType.Name.Replace(ArrayTypeSuffix, string.Empty);
+                    return _currentScope.Lookup(singleType);
+                default:
+                    ThrowIncompatibleTypesException(node.Token, "index type", indexType.Name);
+                    break;
+
+            }
+
+            return variableType;
         }
 
-        private void VisitAssign(ASTAssign node)
+        private Symbol VisitAssign(ASTAssign node)
         {
+            Symbol leftType;
+
             switch (node.Left)
             {
                 case ASTVariable variable:
-                    Visit(variable);
+                    leftType = Visit(variable);
                     break;
                 case ASTVariablesDeclarations variablesDeclarations:
-                    Visit(variablesDeclarations);
+                    leftType = Visit(variablesDeclarations);
                     break;
                 default:
                     throw new ArgumentException($"Invalid AST node type {node.GetType()}");
             }
 
-            Visit(node.Right);
+            var rightType = Visit(node.Right);
+
+            if (leftType.Name != rightType.Name)
+            {
+                ThrowIncompatibleTypesException(node.Token, leftType.Name, rightType.Name);
+            }
+
+            return null;
         }
 
-        private void VisitVariable(ASTVariable node)
+        private Symbol VisitVariable(ASTVariable node)
         {
             var variableName = node.Name;
             var variableSymbol = _currentScope.Lookup(variableName);
@@ -219,9 +278,11 @@ namespace Interpreter.AnalyzerService
             {
                 ThrowSemanticException(ErrorCode.IdentifierNotFound, node.Token);
             }
+
+            return variableSymbol.Type;
         }
 
-        private void VisitFunctionDefinition(ASTFunctionDefinition node)
+        private Symbol VisitFunctionDefinition(ASTFunctionDefinition node)
         {
             var typeName = node.ReturnType.Name;
             var typeSymbol = _currentScope.Lookup(typeName);
@@ -256,7 +317,11 @@ namespace Interpreter.AnalyzerService
                 functionSymbol.Parameters.Add(paramSymbol);
             }
 
-            Visit(node.Body);
+            var returnedType = Visit(node.Body);
+            if (typeName != "void" && (returnedType.Name != typeSymbol.Name))
+            {
+                ThrowIncompatibleTypesException(node.Token, typeSymbol.Name, returnedType.Name);
+            }
 
             if (typeName != "void" && !HasReturnStatement(node.Body))
             {
@@ -269,9 +334,11 @@ namespace Interpreter.AnalyzerService
 
             _currentScope = _currentScope.EnclosingScope;
             Logger.DebugScope($"Leave scope : {functionName}");
+
+            return null;
         }
 
-        private void VisitFunctionCall(ASTFunctionCall functionCall)
+        private Symbol VisitFunctionCall(ASTFunctionCall functionCall)
         {
             var functionSymbol = _currentScope.Lookup(functionCall.FunctionName);
 
@@ -294,35 +361,43 @@ namespace Interpreter.AnalyzerService
             }
 
             functionCall.SymbolFunction = functionSymbol as SymbolFunction;
+
+            return (functionSymbol as SymbolFunction).ReturnType;
         }
 
-        private void VisitReturnStatement(ASTReturn node)
+        private Symbol VisitReturnStatement(ASTReturn node)
         {
             if (node.Condition != null)
             {
-                Visit(node.Condition);
+                return Visit(node.Condition);
             }
+
+            return null;
         }
 
-        private void VisitBreakStatement(ASTBreak node)
+        private Symbol VisitBreakStatement(ASTBreak node)
         {
-            return;
+            return null;
         }
 
-        private void VisitContinueStatement(ASTContinue node)
+        private Symbol VisitContinueStatement(ASTContinue node)
         {
-            return;
+            return null;
         }
 
-        private void VisitIfElseStatement(ASTIfElse node)
+        private Symbol VisitIfElseStatement(ASTIfElse node)
         {
-            Visit(node.Condition);
+            var conditionType = Visit(node.Condition);
+            if (conditionType.Name != "bool")
+            {
+                ThrowIncompatibleTypesException(node.Token, conditionType.Name, "bool");
+            }
 
             Logger.DebugScope($"Enter scope : if");
             var ifScope = new ScopedSymbolTable("if", _currentScope.Level + 1, _currentScope);
             _currentScope = ifScope;
 
-            Visit(node.IfTrue);
+            var returnType = Visit(node.IfTrue);
 
             DebugPrintSymbolTable();
 
@@ -335,34 +410,49 @@ namespace Interpreter.AnalyzerService
                 var elseScope = new ScopedSymbolTable("else", _currentScope.Level + 1, _currentScope);
                 _currentScope = elseScope;
 
-                Visit(node.Else);
+                var elseType = Visit(node.Else);
 
                 DebugPrintSymbolTable();
 
                 _currentScope = _currentScope.EnclosingScope;
                 Logger.DebugScope($"Leave scope : else");
             }
+
+            return returnType;
         }
 
-        private void VisitWhileStatement(ASTWhile node)
+        private Symbol VisitWhileStatement(ASTWhile node)
         {
-            Visit(node.Condition);
+            var conditionType = Visit(node.Condition);
+            if(conditionType.Name != "bool")
+            {
+                ThrowIncompatibleTypesException(node.Token, conditionType.Name, "bool");
+            }
 
             Logger.DebugScope($"Enter scope : while");
             var whileScope = new ScopedSymbolTable("while", _currentScope.Level + 1, _currentScope);
             _currentScope = whileScope;
 
-            Visit(node.Body);
+            var returnType = Visit(node.Body);
 
             DebugPrintSymbolTable();
 
             _currentScope = _currentScope.EnclosingScope;
             Logger.DebugScope($"Leave scope : while");
+
+            return returnType;
         }
 
         private void ThrowSemanticException(ErrorCode errorCode, Token token)
         {
             var message = $"{ErrorCodes.StringRepresentatnion[errorCode]} -> {token}";
+            throw new SemanticError(errorCode, token, message);
+        }
+
+        private void ThrowIncompatibleTypesException(Token token, string leftType, string rightType)
+        {
+            const ErrorCode errorCode = ErrorCode.IncompatibleTypes;
+            var message = $"{ErrorCodes.StringRepresentatnion[errorCode]} {leftType} and {rightType} -> {token}";
             throw new SemanticError(errorCode, token, message);
         }
 

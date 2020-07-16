@@ -11,7 +11,8 @@ namespace Interpreter.Common.Errors
         WrongParamNumber,
         MissingReturnStatement,
         IncorrectType,
-        InvalidIdentifier
+        InvalidIdentifier,
+        IncompatibleTypes
     }
 
     public static class ErrorCodes
@@ -25,7 +26,8 @@ namespace Interpreter.Common.Errors
             { ErrorCode.WrongParamNumber, "Wrong number of arguments" },
             { ErrorCode.MissingReturnStatement, "Missing return statement" },
             { ErrorCode.IncorrectType, "Incorrect type" },
-            { ErrorCode.InvalidIdentifier, "Invalid identifier" }
+            { ErrorCode.InvalidIdentifier, "Invalid identifier" },
+            { ErrorCode.IncompatibleTypes, "Incomatible types" }
         };
     }
 }
