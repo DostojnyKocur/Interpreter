@@ -1,5 +1,5 @@
 {
-	number Index()
+	number Index(number k)
 	{
 		return -2;
 	}
@@ -9,7 +9,7 @@
 		number x = 7;
 		number[] array = [2, 5 * 3, x];
 		
-		number t = array[Index()];
+		number t = array[Index(2)];
 	}
 }
 

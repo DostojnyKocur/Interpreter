@@ -355,9 +355,15 @@ namespace Interpreter.AnalyzerService
                 ThrowSemanticException(ErrorCode.WrongParamNumber, functionCall.Token);
             }
 
-            foreach (var param in functionCall.ActualParameters)
+            for(var i = 0; i < formalParameters.Count; ++i)
             {
-                Visit(param);
+                var param = functionCall.ActualParameters[i];
+                var actualParamType = Visit(param);
+                var formalParamType = formalParameters[i].Type;
+                if(actualParamType.Name != formalParamType.Name)
+                {
+                    ThrowIncompatibleTypesException(param.Token, formalParamType.Name, actualParamType.Name);
+                }
             }
 
             functionCall.SymbolFunction = functionSymbol as SymbolFunction;
