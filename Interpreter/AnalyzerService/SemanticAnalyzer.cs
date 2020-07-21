@@ -261,6 +261,10 @@ namespace Interpreter.AnalyzerService
             {
                 case ASTVariable variable:
                     leftType = Visit(variable);
+                    if(variable.ArrayIndex != null)
+                    {
+                        leftType = new Symbol(leftType.Name.Replace(ArrayTypeSuffix, string.Empty));
+                    }
                     break;
                 case ASTVariablesDeclarations variablesDeclarations:
                     leftType = Visit(variablesDeclarations);
@@ -286,6 +290,15 @@ namespace Interpreter.AnalyzerService
             if (variableSymbol is null)
             {
                 ThrowSemanticException(ErrorCode.IdentifierNotFound, node.Token);
+            }
+
+            if(node.ArrayIndex != null)
+            {
+                var indexType = Visit(node.ArrayIndex);
+                if(indexType.Name != "number")
+                {
+                    ThrowIncompatibleTypesException(node.ArrayIndex.Token, indexType.Name, "number");
+                }
             }
 
             return variableSymbol.Type;

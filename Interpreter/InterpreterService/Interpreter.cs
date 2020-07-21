@@ -101,7 +101,15 @@ namespace Interpreter.InterpreterService
             switch (node.Left)
             {
                 case ASTVariable variable:
-                    _callStack.Top[variable.Name] = value.Value;
+                    if (variable.ArrayIndex != null)
+                    {
+                        var index = Visit(variable.ArrayIndex).Value;
+                        ((List<dynamic>)_callStack.Top[variable.Name])[(int)index] = value.Value;
+                    }
+                    else
+                    {
+                        _callStack.Top[variable.Name] = value.Value;
+                    }
                     return null;
                 case ASTVariablesDeclarations variablesDeclarations:
                     Visit(variablesDeclarations);

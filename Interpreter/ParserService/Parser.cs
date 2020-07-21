@@ -206,7 +206,7 @@ namespace Interpreter.ParserService
             }
             else
             {
-                var variable = new ASTVariable(idToken);
+                var variable = Variable(idToken);
                 var assignmentStatement = AssignmentStatement(variable);
                 Eat(TokenType.Semicolon);
                 return assignmentStatement;
@@ -583,10 +583,25 @@ namespace Interpreter.ParserService
             return new ASTVariablesDeclarations(result);
         }
 
-        private ASTVariable Variable()
+        private ASTVariable Variable(Token idToken = null)
         {
-            var node = new ASTVariable(_currentToken);
-            Eat(TokenType.Id);
+            var token = idToken;
+            if (token is null)
+            {
+                token = _currentToken;
+                Eat(TokenType.Id);
+            }
+
+            ASTNode index = null;
+            if(_currentToken.Type == TokenType.LeftBracket)
+            {
+                Eat(TokenType.LeftBracket);
+                index = Expression();
+                Eat(TokenType.RigthBracket);
+            }
+
+            var node = new ASTVariable(token, index);
+            
             return node;
         }
 

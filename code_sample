@@ -3,14 +3,9 @@
 	{
 		number[] array = [2, 3, 4, 5];
 		
-		for(number i = 0; ; i = i +1)
-		{
-			if(i == 2)
-			{
-				break;
-			}
-			print(array[i]);
-		}
+		array[0] = 17;
+		
+		print(array[0]);
 	}
 }
 
