@@ -20,7 +20,7 @@ namespace Interpreter.AnalyzerService.Symbols
             (Name, Level, EnclosingScope) = (scopeName, scopeLevel, enclosingScope);
 
             var printFunction = new SymbolBuiltinFunction("print", _symbols["void"]);
-            printFunction.Parameters.Add(new SymbolVariable("str", _symbols["string"]));
+            printFunction.Parameters.Add(new SymbolVariable("str", _symbols["number"]));
             _symbols.Add("print", printFunction);
         }
 

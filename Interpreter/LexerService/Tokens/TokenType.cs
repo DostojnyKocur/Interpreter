@@ -15,6 +15,7 @@ namespace Interpreter.LexerService.Tokens
         If,
         Else,
         While,
+        For,
 
         Plus,
         Minus,

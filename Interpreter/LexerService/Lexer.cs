@@ -21,7 +21,8 @@ namespace Interpreter.LexerService
             { "false",  new Token(TokenType.ConstBool, "false") },
             { "if",  new Token(TokenType.If, "if") },
             { "else",  new Token(TokenType.Else, "else") },
-            { "while",  new Token(TokenType.While, "while") }
+            { "while",  new Token(TokenType.While, "while") },
+            { "for",  new Token(TokenType.For, "for") }
         };
 
         private string _text = string.Empty;

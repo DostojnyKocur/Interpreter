@@ -65,6 +65,8 @@ namespace Interpreter.InterpreterService
                     return VisitIfElseStatement(ifElseStatement);
                 case ASTWhile whileStatement:
                     return VisitWhileStatement(whileStatement);
+                case ASTFor forStatement:
+                    return VisitForStatement(forStatement);
             }
 
             throw new ArgumentException($"[{nameof(Interpreter)}] No visit method for node type {node.GetType()}");
@@ -328,6 +330,39 @@ namespace Interpreter.InterpreterService
                 }
 
                 condition = Visit(node.Condition).Value;
+            }
+
+            return null;
+        }
+
+        private VisitResult VisitForStatement(ASTFor node)
+        {
+            foreach (var assign in node.Assignments)
+            {
+                Visit(assign);
+            }
+
+            var condition = node.Condition != null ? Visit(node.Condition).Value : true;
+            while (condition)
+            {
+                var result = Visit(node.Body);
+                if (result != null)
+                {
+                    switch (result.ControlType)
+                    {
+                        case ControlType.Return:
+                            return result;
+                        case ControlType.Break:
+                            return null;
+                    }
+                }
+
+                foreach (var continueStatement in node.ContinueStatements)
+                {
+                    Visit(continueStatement);
+                }
+
+                condition = node.Condition != null ? Visit(node.Condition).Value : true;
             }
 
             return null;

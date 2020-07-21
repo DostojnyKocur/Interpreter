@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Interpreter.AnalyzerService.Symbols;
 using Interpreter.Common;
 using Interpreter.Common.Errors;
@@ -10,6 +11,7 @@ namespace Interpreter.AnalyzerService
 {
     public class SemanticAnalyzer : ISemanticAnalyzer
     {
+        private static readonly TokenType[] BoolOperators = { TokenType.Equal, TokenType.NotEqual, TokenType.Greater, TokenType.GreaterEqual, TokenType.Less, TokenType.LessEqual, TokenType.Not, TokenType.And, TokenType.Or };
         private const string ArrayTypeSuffix = "_array";
 
         private readonly ScopedSymbolTable _globalScope = new ScopedSymbolTable("global", 1);
@@ -71,6 +73,8 @@ namespace Interpreter.AnalyzerService
                     return VisitIfElseStatement(ifElseStatement);
                 case ASTWhile whileStatement:
                     return VisitWhileStatement(whileStatement);
+                case ASTFor forStatement:
+                    return VisitForStatement(forStatement);
                 default:
                     throw new ArgumentException($"[{nameof(SemanticAnalyzer)}] No visit method for node type {node.GetType()}");
             }
@@ -151,6 +155,11 @@ namespace Interpreter.AnalyzerService
             if (leftType != rightType)
             {
                 ThrowIncompatibleTypesException(node.Token, leftType.Name, rightType.Name);
+            }
+
+            if(BoolOperators.Contains(node.Type))
+            {
+                return new Symbol("bool");
             }
 
             return leftType;
@@ -355,12 +364,12 @@ namespace Interpreter.AnalyzerService
                 ThrowSemanticException(ErrorCode.WrongParamNumber, functionCall.Token);
             }
 
-            for(var i = 0; i < formalParameters.Count; ++i)
+            for (var i = 0; i < formalParameters.Count; ++i)
             {
                 var param = functionCall.ActualParameters[i];
                 var actualParamType = Visit(param);
                 var formalParamType = formalParameters[i].Type;
-                if(actualParamType.Name != formalParamType.Name)
+                if (actualParamType.Name != formalParamType.Name)
                 {
                     ThrowIncompatibleTypesException(param.Token, formalParamType.Name, actualParamType.Name);
                 }
@@ -430,7 +439,7 @@ namespace Interpreter.AnalyzerService
         private Symbol VisitWhileStatement(ASTWhile node)
         {
             var conditionType = Visit(node.Condition);
-            if(conditionType.Name != "bool")
+            if (conditionType.Name != "bool")
             {
                 ThrowIncompatibleTypesException(node.Token, conditionType.Name, "bool");
             }
@@ -445,6 +454,37 @@ namespace Interpreter.AnalyzerService
 
             _currentScope = _currentScope.EnclosingScope;
             Logger.DebugScope($"Leave scope : while");
+
+            return returnType;
+        }
+
+        private Symbol VisitForStatement(ASTFor node)
+        {
+            Logger.DebugScope($"Enter scope : for");
+            var whileScope = new ScopedSymbolTable("for", _currentScope.Level + 1, _currentScope);
+            _currentScope = whileScope;
+
+            foreach (var assign in node.Assignments)
+            {
+                Visit(assign);
+            }
+
+            if (node.Condition != null)
+            {
+                Visit(node.Condition);
+            }
+
+            foreach (var statement in node.ContinueStatements)
+            {
+                Visit(statement);
+            }
+
+            var returnType = Visit(node.Body);
+
+            DebugPrintSymbolTable();
+
+            _currentScope = _currentScope.EnclosingScope;
+            Logger.DebugScope($"Leave scope : for");
 
             return returnType;
         }

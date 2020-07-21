@@ -13,6 +13,7 @@ namespace Interpreter.ParserService
         private static readonly TokenType[] TermOperators = { TokenType.Plus, TokenType.Minus };
         private static readonly TokenType[] FactorOperators = { TokenType.Multiplication, TokenType.Divide, TokenType.Modulo };
         private static readonly TokenType[] CompareOperators = { TokenType.Equal, TokenType.NotEqual, TokenType.Greater, TokenType.GreaterEqual, TokenType.Less, TokenType.LessEqual };
+        private static readonly TokenType[] BuilinVarTypes = { TokenType.TypeNumber, TokenType.TypeBool, TokenType.TypeString };
 
         private readonly ILexer _lexer;
         private Token _currentToken = null;
@@ -90,9 +91,42 @@ namespace Interpreter.ParserService
                     return IfElseStatement();
                 case TokenType.While:
                     return WhileStatement();
+                case TokenType.For:
+                    return ForStatement();
                 default:
                     return Empty();
             }
+        }
+
+        private ASTFor ForStatement()
+        {
+            var token = _currentToken;
+            Eat(TokenType.For);
+            Eat(TokenType.LeftParen);
+            var assignments = new List<ASTAssign>();
+            if (_currentToken.Type != TokenType.Semicolon)
+            {
+                assignments = ForInitializationAssignments();
+            }
+            Eat(TokenType.Semicolon);
+
+            ASTNode condition = null;
+            if (_currentToken.Type != TokenType.Semicolon)
+            {
+                condition = Condition();
+            }
+            Eat(TokenType.Semicolon);
+
+            var continueStatements = new List<ASTNode>();
+            if (_currentToken.Type != TokenType.RightParen)
+            {
+                continueStatements = ForContinueStatement();
+            }
+            Eat(TokenType.RightParen);
+
+            var statement = Statement();
+
+            return new ASTFor(token, assignments, condition, continueStatements, statement);
         }
 
         private ASTIfElse IfElseStatement()
@@ -211,6 +245,54 @@ namespace Interpreter.ParserService
 
             ThrowParsingException(ErrorCode.UnexpectedToken, _currentToken);
             return null;
+        }
+
+        private List<ASTAssign> ForInitializationAssignments()
+        {
+            var assignments = new List<ASTAssign>();
+            while (_currentToken.Type != TokenType.Semicolon)
+            {
+                ASTAssign assignment;
+                if (BuilinVarTypes.Contains(_currentToken.Type))
+                {
+                    var type = Type();
+                    var firstVariable = Variable();
+                    var variablesDeclarations = VariablesDeclarations(type, firstVariable);
+                    assignment = AssignmentStatement(variablesDeclarations);
+
+                }
+                else
+                {
+                    var firstVariable = Variable();
+                    assignment = AssignmentStatement(firstVariable);
+
+                }
+                assignments.Add(assignment);
+                if (_currentToken.Type == TokenType.Comma)
+                {
+                    Eat(TokenType.Comma);
+                }
+            }
+
+            return assignments;
+        }
+
+        private List<ASTNode> ForContinueStatement()
+        {
+            var continueStatements = new List<ASTNode>();
+
+            while (_currentToken.Type != TokenType.RightParen)
+            {
+                var firstVariable = Variable();
+                var assignment = AssignmentStatement(firstVariable);
+                continueStatements.Add(assignment);
+                if (_currentToken.Type == TokenType.Comma)
+                {
+                    Eat(TokenType.Comma);
+                }
+            }
+
+            return continueStatements;
         }
 
         private ASTAssign AssignmentStatement(ASTNode leftNode)

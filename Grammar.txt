@@ -9,6 +9,7 @@ statement					:	compound_statement
 								| function_call SEMI 
 								| return_statement SEMI 
 								| while_statement 
+								| for_statement
 								| if_statement 
 								| empty
 assignment_statement		:	variable ASSIGN expression 
@@ -19,6 +20,7 @@ return_statement			:	RETURN condition
 break_statement				:	BREAK SEMI
 continue_statement			:	CONTINUE SEMI
 while_statement				:	WHILE LPAREN condition RPAREN statement
+for_statement				:	FOR LPAREN (assignment_statement (COMMA)?)* SEMI condition? SEMI (assignment_statement (COMMA)?)* RPAREN statement
 if_statement				:	IF LPAREN condition RPAREN statement (ELSE statement)?
 array_initialization		:	LBRACKET (expression,)* RBRACKET
 index_expression			:	variable LBRACKET expression RBRACKET

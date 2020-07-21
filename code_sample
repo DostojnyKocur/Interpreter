@@ -1,15 +1,16 @@
 {
-	number Index(number k)
-	{
-		return -2;
-	}
-
 	void Main()
 	{
-		number x = 7;
-		number[] array = [2, 5 * 3, x];
+		number[] array = [2, 3, 4, 5];
 		
-		number t = array[Index(2)];
+		for(number i = 0; ; i = i +1)
+		{
+			if(i == 2)
+			{
+				break;
+			}
+			print(array[i]);
+		}
 	}
 }
 
