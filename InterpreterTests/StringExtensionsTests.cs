@@ -4,6 +4,7 @@ using NUnit.Framework;
 
 namespace InterpreterTests
 {
+    [TestFixture]
     public class StringExtensionsTests
     {
         [TestCase("1", 1)]
