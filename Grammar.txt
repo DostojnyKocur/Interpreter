@@ -4,7 +4,7 @@ statement_list				:	statement
 								| statement statement_list
 statement					:	compound_statement 
 								| assignment_statement SEMI 
-								| variables_declarations 
+								| variables_declarations SEMI
 								| function_definition 
 								| function_call SEMI 
 								| return_statement SEMI 
@@ -23,7 +23,7 @@ while_statement				:	WHILE LPAREN condition RPAREN statement
 for_statement				:	FOR LPAREN (assignment_statement (COMMA assignment_statement)*)? SEMI condition? SEMI (assignment_statement (COMMA assignment_statement)*)? RPAREN statement
 if_statement				:	IF LPAREN condition RPAREN statement (ELSE statement)?
 array_initialization		:	LBRACKET (expression (COMMA expression)*)? RBRACKET
-index_expression			:	variable LBRACKET expression RBRACKET
+index_expression			:	variable LBRACKET expression ((COLON expression)? COLON expression)? RBRACKET
 expression					:	term ((PLUS | MINUS) term)* 
 								| condition
 term						:	factor ((MUL | DIV | MOD) factor)*

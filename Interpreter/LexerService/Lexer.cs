@@ -33,8 +33,8 @@ namespace Interpreter.LexerService
         public Lexer(string text) => (_text, CurrentChar) = (text, text[_position]);
 
         public char CurrentChar { get; private set; } = char.MinValue;
-        private char NextChar => _position + 1 > _text.Length - 1 ? char.MaxValue : _text[_position + 1];
-        private bool CurrentCharValid => CurrentChar != char.MaxValue;
+        private char _nextChar => _position + 1 > _text.Length - 1 ? char.MaxValue : _text[_position + 1];
+        private bool _currentCharIsValid => CurrentChar != char.MaxValue;
 
         public Token GetNextToken()
         {
@@ -53,44 +53,35 @@ namespace Interpreter.LexerService
 
                 if (char.IsLetterOrDigit(CurrentChar))
                 {
-                    return GetId();
+                    return GetIdentifier();
                 }
 
-                if(CurrentChar == '\"')
+                if (CurrentChar == '\"')
                 {
                     return GetString();
                 }
 
                 if (CurrentChar == '/')
                 {
-                    if (NextChar == '*')
+                    switch (_nextChar)
                     {
-                        SkipComment();
-                        continue;
-                    }
-                    else
-                    {
-                        Advance();
-                        return new Token(TokenType.Divide, null, _lineNumber, _column);
+                        case '*':
+                            SkipComment();
+                            continue;
+                        case '/':
+                            SkipSingleLineComment();
+                            continue;
                     }
                 }
-                else
-                {
-                    var compareOperator = GetCompareOperator();
-                    if (compareOperator != null)
-                    {
-                        return compareOperator;
-                    }
 
-                    var tokenType = TokenTypes.GetForChar(CurrentChar);
-                    Advance();
-                    if (tokenType is null)
-                    {
-                        var message = $"Lexer error on '{CurrentChar}' line: {_lineNumber} column: {_column}";
-                        throw new LexerError(message: message);
-                    }
-                    return new Token((TokenType)tokenType, null, _lineNumber, _column);
+                var token = GetToken();
+                if (token is null)
+                {
+                    var message = $"Lexer error on '{CurrentChar}' line: {_lineNumber} column: {_column}";
+                    throw new LexerError(message: message);
                 }
+                return token;
+
             }
 
             return new Token(TokenType.EOF, null, _lineNumber, _column);
@@ -114,8 +105,16 @@ namespace Interpreter.LexerService
                 }
                 else
                 {
+                    if (CurrentChar == '\t')
+                    {
+                        _column += 4;
+                    }
+                    else
+                    {
+                        _column += 1;
+                    }
+
                     CurrentChar = _text[_position];
-                    _column += 1;
                 }
             }
         }
@@ -130,61 +129,115 @@ namespace Interpreter.LexerService
 
         private void SkipComment()
         {
-            while ((CurrentChar != '*') || (NextChar != '/'))
+            while ((CurrentChar != '*') || (_nextChar != '/'))
             {
                 Advance();
             }
-
             Advance(2);  // '*' '/'
         }
 
-        private Token GetCompareOperator()
+        private void SkipSingleLineComment()
         {
+            while (CurrentChar != '\n')
+            {
+                Advance();
+            }
+            Advance();
+        }
+
+        private Token GetToken()
+        {
+            var lineNumber = _lineNumber;
+            var column = _column;
+
             switch (CurrentChar)
             {
+                case ';':
+                    Advance();
+                    return new Token(TokenType.Semicolon, null, lineNumber, column);
+                case ',':
+                    Advance();
+                    return new Token(TokenType.Comma, null, lineNumber, column);
+                case '+':
+                    Advance();
+                    return new Token(TokenType.Plus, null, lineNumber, column);
+                case '-':
+                    Advance();
+                    return new Token(TokenType.Minus, null, lineNumber, column);
+                case '*':
+                    Advance();
+                    return new Token(TokenType.Multiplication, null, lineNumber, column);
+                case '/':
+                    Advance();
+                    return new Token(TokenType.Divide, null, lineNumber, column);
+                case '%':
+                    Advance();
+                    return new Token(TokenType.Modulo, null, lineNumber, column);
+                case '(':
+                    Advance();
+                    return new Token(TokenType.LeftParen, null, lineNumber, column);
+                case ')':
+                    Advance();
+                    return new Token(TokenType.RightParen, null, lineNumber, column);
+                case '{':
+                    Advance();
+                    return new Token(TokenType.ScopeBegin, null, lineNumber, column);
+                case '}':
+                    Advance();
+                    return new Token(TokenType.ScopeEnd, null, lineNumber, column);
+                case '[':
+                    Advance();
+                    return new Token(TokenType.LeftBracket, null, lineNumber, column);
+                case ']':
+                    Advance();
+                    return new Token(TokenType.RigthBracket, null, lineNumber, column);
                 case '=':
-                    if (NextChar == '=')
+                    if (_nextChar == '=')
                     {
                         Advance(2);
-                        return new Token(TokenType.Equal, null, _lineNumber, _column);
+                        return new Token(TokenType.Equal, null, lineNumber, column);
                     }
-                    break;
+                    else
+                    {
+                        Advance();
+                        return new Token(TokenType.Assign, null, lineNumber, column);
+                    }
                 case '>':
-                    if (NextChar == '=')
+                    if (_nextChar == '=')
                     {
                         Advance(2);
-                        return new Token(TokenType.GreaterEqual, null, _lineNumber, _column);
+                        return new Token(TokenType.GreaterEqual, null, lineNumber, column);
                     }
                     Advance();
-                    return new Token(TokenType.Greater, null, _lineNumber, _column);
+                    return new Token(TokenType.Greater, null, lineNumber, column);
                 case '<':
-                    if (NextChar == '=')
+                    if (_nextChar == '=')
                     {
                         Advance(2);
-                        return new Token(TokenType.LessEqual, null, _lineNumber, _column);
+                        return new Token(TokenType.LessEqual, null, lineNumber, column);
                     }
                     Advance();
-                    return new Token(TokenType.Less, null, _lineNumber, _column);
+                    return new Token(TokenType.Less, null, lineNumber, column);
                 case '!':
-                    if (NextChar == '=')
+                    if (_nextChar == '=')
                     {
                         Advance(2);
-                        return new Token(TokenType.NotEqual, null, _lineNumber, _column);
+                        return new Token(TokenType.NotEqual, null, lineNumber, column);
                     }
                     Advance();
-                    return new Token(TokenType.Not, null, _lineNumber, _column);
+                    return new Token(TokenType.Not, null, lineNumber, column);
                 case '&':
-                    if (NextChar == '&')
+                    if (_nextChar == '&')
                     {
                         Advance(2);
-                        return new Token(TokenType.And, null, _lineNumber, _column);
+                        return new Token(TokenType.And, null, lineNumber, column);
                     }
                     break;
                 case '|':
-                    if (NextChar == '|')
+                    if (_nextChar == '|')
                     {
                         Advance(2);
-                        return new Token(TokenType.Or, null, _lineNumber, _column);
+                        return new Token(TokenType.Or, null, lineNumber, column);
                     }
                     break;
 
@@ -192,41 +245,50 @@ namespace Interpreter.LexerService
             return null;
         }
 
-        private Token GetId()
+        private Token GetIdentifier()
         {
+            var lineNumber = _lineNumber;
+            var column = _column;
+
             var result = GetLexeme(() => char.IsLetterOrDigit(CurrentChar) || CurrentChar == '_');
 
             if (ReserverKeywords.ContainsKey(result))
             {
-                return ReserverKeywords[result].Copy(_lineNumber, _column);
+                return ReserverKeywords[result].Copy(lineNumber, column);
             }
 
-            return new Token(TokenType.Id, result, _lineNumber, _column);
+            return new Token(TokenType.Identifier, result, lineNumber, column);
         }
 
         private Token GetNumber()
         {
+            var lineNumber = _lineNumber;
+            var column = _column;
+
             var result = GetLexeme(() => char.IsLetterOrDigit(CurrentChar) || CurrentChar == '.');
 
-            return new Token(TokenType.ConstNumber, result, _lineNumber, _column);
+            return new Token(TokenType.ConstNumber, result, lineNumber, column);
         }
 
         private Token GetString()
         {
             Advance(); // Beggining "
 
+            var lineNumber = _lineNumber;
+            var column = _column;
+
             var value = GetLexeme(() => char.IsLetterOrDigit(CurrentChar) || CurrentChar == '_');
 
             Advance(); // finishing "
 
-            return new Token(TokenType.ConstString, value, _lineNumber, _column);
+            return new Token(TokenType.ConstString, value, lineNumber, column);
         }
 
         private string GetLexeme(Func<bool> predicate)
         {
             var stringBuilder = new StringBuilder();
 
-            while (predicate() && CurrentCharValid)
+            while (predicate() && _currentCharIsValid)
             {
                 stringBuilder.Append(CurrentChar);
                 Advance();

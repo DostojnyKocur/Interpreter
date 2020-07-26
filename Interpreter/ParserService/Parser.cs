@@ -60,7 +60,7 @@ namespace Interpreter.ParserService
                 results.Add(Statement());
             }
 
-            if (_currentToken.Type == TokenType.Id)
+            if (_currentToken.Type == TokenType.Identifier)
             {
                 ThrowParsingException(ErrorCode.UnexpectedToken, _currentToken);
             }
@@ -74,7 +74,7 @@ namespace Interpreter.ParserService
             {
                 case TokenType.ScopeBegin:
                     return CompoundStatement();
-                case TokenType.Id:
+                case TokenType.Identifier:
                     return StatementAssignmentFunctionCall();
                 case TokenType.TypeVoid:
                 case TokenType.TypeNumber:
@@ -196,7 +196,7 @@ namespace Interpreter.ParserService
         private ASTNode StatementAssignmentFunctionCall()
         {
             var idToken = _currentToken;
-            Eat(TokenType.Id);
+            Eat(TokenType.Identifier);
 
             if (_currentToken.Type == TokenType.LeftParen)
             {
@@ -217,7 +217,7 @@ namespace Interpreter.ParserService
         {
             var type = Type();
             var idToken = _currentToken;
-            Eat(TokenType.Id);
+            Eat(TokenType.Identifier);
 
             if (_currentToken.Type == TokenType.Comma ||
                 _currentToken.Type == TokenType.Semicolon ||
@@ -477,17 +477,17 @@ namespace Interpreter.ParserService
                     var node = Expression();
                     Eat(TokenType.RightParen);
                     return node;
-                case TokenType.Id:
+                case TokenType.Identifier:
                     switch (_lexer.CurrentChar)
                     {
                         case '(':
-                            Eat(TokenType.Id);
+                            Eat(TokenType.Identifier);
                             return FunctionCall(token);
                         case '[':
-                            Eat(TokenType.Id);
+                            Eat(TokenType.Identifier);
                             return IndexExpression(new ASTVariable(token));
                     }
-                    Eat(TokenType.Id);
+                    Eat(TokenType.Identifier);
                     return new ASTVariable(token);
             }
 
@@ -589,7 +589,7 @@ namespace Interpreter.ParserService
             if (token is null)
             {
                 token = _currentToken;
-                Eat(TokenType.Id);
+                Eat(TokenType.Identifier);
             }
 
             ASTNode index = null;

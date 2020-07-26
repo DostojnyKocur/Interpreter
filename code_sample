@@ -1,11 +1,14 @@
 {
 	void Main()
 	{
+		//this is an array
 		number[] array = [2, 3, 4, 5];
 		
 		array[0] = 17;
 		
-		print(array[0]);
+		print(array[0]); //this is inline comment
+		
+		number t = 5 / 7; 
 	}
 }
 
