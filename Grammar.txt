@@ -12,44 +12,43 @@ statement					:	compound_statement
 								| for_statement
 								| if_statement 
 								| empty
-assignment_statement		:	variable ASSIGN expression 
-								| variables_declarations ASSIGN expression
+assignment_statement		:	variable ASSIGN arithmetic_expression 
+								| variables_declarations ASSIGN arithmetic_expression
 								| variable ASSIGN array_initialization
 								| variables_declarations ASSIGN array_initialization
-return_statement			:	RETURN condition 
+return_statement			:	RETURN expression 
 break_statement				:	BREAK SEMI
 continue_statement			:	CONTINUE SEMI
-while_statement				:	WHILE LPAREN condition RPAREN statement
-for_statement				:	FOR LPAREN (assignment_statement (COMMA assignment_statement)*)? SEMI condition? SEMI (assignment_statement (COMMA assignment_statement)*)? RPAREN statement
-if_statement				:	IF LPAREN condition RPAREN statement (ELSE statement)?
-array_initialization		:	LBRACKET (expression (COMMA expression)*)? RBRACKET
-index_expression			:	variable LBRACKET expression ((COLON expression)? COLON expression)? RBRACKET
-expression					:	term ((PLUS | MINUS) term)* 
-								| condition
+while_statement				:	WHILE LPAREN expression RPAREN statement
+for_statement				:	FOR LPAREN (assignment_statement (COMMA assignment_statement)*)? SEMI expression? SEMI (assignment_statement (COMMA assignment_statement)*)? RPAREN statement
+if_statement				:	IF LPAREN expression RPAREN statement (ELSE statement)?
+array_initialization		:	LBRACKET (arithmetic_expression (COMMA arithmetic_expression)*)? RBRACKET
+arithmetic_expression		:	term ((PLUS | MINUS) term)* 
+								| expression
 term						:	factor ((MUL | DIV | MOD) factor)*
 factor						:	(PLUS | MINUS) factor 
-								| LPAREN expression RPAREN 
+								| LPAREN arithmetic_expression RPAREN 
 								| function_call
-								| index_expression
+								| variable
 								| NUMBER_CONST 
 								| BOOL_CONST
 								| STRING_CONST
-condition					: 	or_condition
+expression					: 	or_condition
 or_condition				:	and_condition (OR and_condition)*
 and_condition				:	not_condition (AND not_condition)*
 not_condition				:	NOT not_condition 
-								| LPAREN condition RPAREN 
+								| LPAREN expression RPAREN 
 								| comparison
-comparison					: 	expression (COMAPRE expression)* 
+comparison					: 	arithmetic_expression (COMAPRE arithmetic_expression)* 
 								| TRUE 
 								| FALSE
 function_definition			:	type_specification ID LPAREN parameter_list+ RPAREN compound_statement
 parameter_list				:	(type_specification ID (COMMA)+ )*
-function_call				:	ID LPAREN (expression (COMMA expression)*)? RPAREN
+function_call				:	ID LPAREN (arithmetic_expression (COMMA arithmetic_expression)*)? RPAREN
 variables_declarations		:	variable_declaration*
 variable_declaration		:	type_specification ID (COMMA ID)* SEMI
 variable					:	ID
-								| ID LBRACKET expression RBRACKET
+								| ID LBRACKET arithmetic_expression ((COLON arithmetic_expression)? COLON arithmetic_expression)? RBRACKET
 non_array_specification		:	VOID
 								| NUMBER
 								| BOOL

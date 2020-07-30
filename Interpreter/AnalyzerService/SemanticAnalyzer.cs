@@ -47,8 +47,6 @@ namespace Interpreter.AnalyzerService
                     return VisitVariableDeclaration(variableDeclaration);
                 case ASTArrayInitialization arrayInitialization:
                     return VisitArrayInitialization(arrayInitialization);
-                case ASTIndexExpression indexExpression:
-                    return VisitIndexExpression(indexExpression);
                 case ASTNumber number:
                     return VisitNumber(number);
                 case ASTBool @bool:
@@ -137,10 +135,10 @@ namespace Interpreter.AnalyzerService
                 else
                 {
                     var currentType = Visit(child);
-                    if (currentType.Name != returnType.Name)
-                    {
-                        ThrowIncompatibleTypesException(child.Token, returnType.Name, currentType.Name);
-                    }
+                    //    if (currentType.Name != returnType.Name)
+                    //    {
+                    //        ThrowIncompatibleTypesException(child.Token, returnType.Name, currentType.Name);
+                    //    }
                 }
             }
 
@@ -235,24 +233,6 @@ namespace Interpreter.AnalyzerService
             return new Symbol($"{itemType.Name}{ArrayTypeSuffix}");
         }
 
-        private Symbol VisitIndexExpression(ASTIndexExpression node)
-        {
-            var variableType = Visit(node.Variable);
-            var indexType = Visit(node.Expression);
-            switch (indexType.Name)
-            {
-                case "number":
-                    var singleType = variableType.Name.Replace(ArrayTypeSuffix, string.Empty);
-                    return _currentScope.Lookup(singleType);
-                default:
-                    ThrowIncompatibleTypesException(node.Token, "index type", indexType.Name);
-                    break;
-
-            }
-
-            return variableType;
-        }
-
         private Symbol VisitAssign(ASTAssign node)
         {
             Symbol leftType;
@@ -261,7 +241,7 @@ namespace Interpreter.AnalyzerService
             {
                 case ASTVariable variable:
                     leftType = Visit(variable);
-                    if(variable.ArrayIndex != null)
+                    if(variable.ArrayIndexFrom != null)
                     {
                         leftType = new Symbol(leftType.Name.Replace(ArrayTypeSuffix, string.Empty));
                     }
@@ -292,12 +272,12 @@ namespace Interpreter.AnalyzerService
                 ThrowSemanticException(ErrorCode.IdentifierNotFound, node.Token);
             }
 
-            if(node.ArrayIndex != null)
+            if(node.ArrayIndexFrom != null)
             {
-                var indexType = Visit(node.ArrayIndex);
+                var indexType = Visit(node.ArrayIndexFrom);
                 if(indexType.Name != "number")
                 {
-                    ThrowIncompatibleTypesException(node.ArrayIndex.Token, indexType.Name, "number");
+                    ThrowIncompatibleTypesException(node.ArrayIndexFrom.Token, indexType.Name, "number");
                 }
             }
 
@@ -382,10 +362,10 @@ namespace Interpreter.AnalyzerService
                 var param = functionCall.ActualParameters[i];
                 var actualParamType = Visit(param);
                 var formalParamType = formalParameters[i].Type;
-                if (actualParamType.Name != formalParamType.Name)
-                {
-                    ThrowIncompatibleTypesException(param.Token, formalParamType.Name, actualParamType.Name);
-                }
+                //if (actualParamType.Name != formalParamType.Name)
+                //{
+                //    ThrowIncompatibleTypesException(param.Token, formalParamType.Name, actualParamType.Name);
+                //}
             }
 
             functionCall.SymbolFunction = functionSymbol as SymbolFunction;

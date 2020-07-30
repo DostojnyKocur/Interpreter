@@ -49,8 +49,6 @@ namespace Interpreter.InterpreterService
                     return VisitVariableDeclaration(variableDeclaration);
                 case ASTArrayInitialization arrayInitialization:
                     return VisitArrayInitialization(arrayInitialization);
-                case ASTIndexExpression indexExpression:
-                    return VisitIndexExpression(indexExpression);
                 case ASTFunctionDefinition functionDefinition:
                     return VisitFunctionDefinition(functionDefinition);
                 case ASTFunctionCall functionCall:
@@ -101,9 +99,9 @@ namespace Interpreter.InterpreterService
             switch (node.Left)
             {
                 case ASTVariable variable:
-                    if (variable.ArrayIndex != null)
+                    if (variable.ArrayIndexFrom != null)
                     {
-                        var index = Visit(variable.ArrayIndex).Value;
+                        var index = Visit(variable.ArrayIndexFrom).Value;
                         ((List<dynamic>)_callStack.Top[variable.Name])[(int)index] = value.Value;
                     }
                     else
@@ -125,6 +123,21 @@ namespace Interpreter.InterpreterService
 
         private VisitResult VisitVariable(ASTVariable node)
         {
+            if (node.ArrayIndexFrom != null)
+            {
+                var array = (List<dynamic>)_callStack.Top[node.Name];
+                var indexFrom = (int)Visit(node.ArrayIndexFrom).Value;
+
+                var integreIndex = indexFrom < 0 ? array.Count + indexFrom : indexFrom;
+
+                return new VisitResult
+                {
+                    ControlType = ControlType.Return,
+                    Value = array[integreIndex]
+                };
+
+            }
+
             return new VisitResult
             {
                 ControlType = ControlType.Return,
@@ -222,20 +235,6 @@ namespace Interpreter.InterpreterService
             {
                 ControlType = ControlType.Return,
                 Value = result
-            };
-        }
-
-        private VisitResult VisitIndexExpression(ASTIndexExpression node)
-        {
-            var array = (List<dynamic>)Visit(node.Variable).Value;
-            var index = (int)Visit(node.Expression).Value;
-
-            var integreIndex = index < 0 ? array.Count + index : index;
-
-            return new VisitResult
-            {
-                ControlType = ControlType.Return,
-                Value = array[integreIndex]
             };
         }
 

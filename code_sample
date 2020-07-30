@@ -1,4 +1,12 @@
 {
+	/*
+		This function returns doubled parameter.
+	*/
+	number GetDoubled(number n)
+	{
+		return 2 * n;
+	}
+
 	void Main()
 	{
 		//this is an array
@@ -9,6 +17,10 @@
 		print(array[0]); //this is inline comment
 		
 		number t = 5 / 7; 
+		
+		number res = GetDoubled(array[0]);
+		
+		print(res);
 	}
 }
 
