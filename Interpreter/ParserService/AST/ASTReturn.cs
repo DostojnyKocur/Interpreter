@@ -4,8 +4,8 @@ namespace Interpreter.ParserService.AST
 {
     public class ASTReturn : ASTNode
     {
-        public ASTReturn(Token token, ASTNode condition) => (Token, Condition) = (token, condition);
+        public ASTReturn(Token token, ASTNode expression) => (Token, Expression) = (token, expression);
 
-        public ASTNode Condition { get; }
+        public ASTNode Expression { get; }
     }
 }

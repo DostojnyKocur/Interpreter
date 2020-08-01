@@ -276,7 +276,7 @@ namespace Interpreter.InterpreterService
             return new VisitResult
             {
                 ControlType = ControlType.Return,
-                Value = node.Condition != null ? Visit(node.Condition).Value : null
+                Value = node.Expression != null ? Visit(node.Expression).Value : null
             };
         }
 

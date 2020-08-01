@@ -135,10 +135,10 @@ namespace Interpreter.AnalyzerService
                 else
                 {
                     var currentType = Visit(child);
-                    //    if (currentType.Name != returnType.Name)
-                    //    {
-                    //        ThrowIncompatibleTypesException(child.Token, returnType.Name, currentType.Name);
-                    //    }
+                    if (currentType != null && currentType != null && currentType.Name != returnType.Name)
+                    {
+                        ThrowIncompatibleTypesException(child.Token, returnType.Name, currentType.Name);
+                    }
                 }
             }
 
@@ -155,17 +155,14 @@ namespace Interpreter.AnalyzerService
                 ThrowIncompatibleTypesException(node.Token, leftType.Name, rightType.Name);
             }
 
-            if(BoolOperators.Contains(node.Type))
-            {
-                return new Symbol("bool");
-            }
-
-            return leftType;
+            return BoolOperators.Contains(node.Type) ? _currentScope.Lookup("bool") : leftType;
         }
 
         private Symbol VisitUnaryOperator(ASTUnaryOperator node)
         {
-            return Visit(node.Expression);
+            var type = Visit(node.Expression);
+
+            return BoolOperators.Contains(node.Type) ? _currentScope.Lookup("bool") : type;
         }
 
         private Symbol VisitVariablesDeclarations(ASTVariablesDeclarations node)
@@ -194,7 +191,18 @@ namespace Interpreter.AnalyzerService
 
             if (node.VariableType.TypeSpec is ASTArrayType)
             {
-                typeSymbol = new Symbol($"{typeName}{ArrayTypeSuffix}");
+                var arrayTypeName = $"{typeName}{ArrayTypeSuffix}";
+
+                var arrayTypeSymbol = _currentScope.Lookup(arrayTypeName);
+                if(arrayTypeSymbol is null)
+                {
+                    typeSymbol = new SymbolArrayType(arrayTypeName, typeSymbol);
+                    _currentScope.Define(typeSymbol);
+                }
+                else
+                {
+                    typeSymbol = arrayTypeSymbol;
+                }
             }
 
             var variableName = node.Variable.Name;
@@ -223,14 +231,14 @@ namespace Interpreter.AnalyzerService
                 else
                 {
                     var currentItemType = Visit(item);
-                    if (currentItemType != itemType)
+                    if (currentItemType.Name != itemType.Name)
                     {
                         ThrowIncompatibleTypesException(node.Token, itemType.Name, currentItemType.Name);
                     }
                 }
             }
 
-            return new Symbol($"{itemType.Name}{ArrayTypeSuffix}");
+            return _currentScope.Lookup($"{itemType.Name}{ArrayTypeSuffix}");
         }
 
         private Symbol VisitAssign(ASTAssign node)
@@ -241,10 +249,6 @@ namespace Interpreter.AnalyzerService
             {
                 case ASTVariable variable:
                     leftType = Visit(variable);
-                    if(variable.ArrayIndexFrom != null)
-                    {
-                        leftType = new Symbol(leftType.Name.Replace(ArrayTypeSuffix, string.Empty));
-                    }
                     break;
                 case ASTVariablesDeclarations variablesDeclarations:
                     leftType = Visit(variablesDeclarations);
@@ -255,7 +259,7 @@ namespace Interpreter.AnalyzerService
 
             var rightType = Visit(node.Right);
 
-            if (leftType.Name != rightType.Name)
+            if (leftType != rightType)
             {
                 ThrowIncompatibleTypesException(node.Token, leftType.Name, rightType.Name);
             }
@@ -279,6 +283,8 @@ namespace Interpreter.AnalyzerService
                 {
                     ThrowIncompatibleTypesException(node.ArrayIndexFrom.Token, indexType.Name, "number");
                 }
+
+                return variableSymbol.Type.Type;
             }
 
             return variableSymbol.Type;
@@ -320,12 +326,12 @@ namespace Interpreter.AnalyzerService
             }
 
             var returnedType = Visit(node.Body);
-            if (typeName != "void" && (returnedType.Name != typeSymbol.Name))
+            if (returnedType != null && returnedType != typeSymbol)
             {
                 ThrowIncompatibleTypesException(node.Token, typeSymbol.Name, returnedType.Name);
             }
 
-            if (typeName != "void" && !HasReturnStatement(node.Body))
+            if (returnedType != null && returnedType.Name != "void" && !HasReturnStatement(node.Body))
             {
                 ThrowSemanticException(ErrorCode.MissingReturnStatement, node.Token);
             }
@@ -362,10 +368,10 @@ namespace Interpreter.AnalyzerService
                 var param = functionCall.ActualParameters[i];
                 var actualParamType = Visit(param);
                 var formalParamType = formalParameters[i].Type;
-                //if (actualParamType.Name != formalParamType.Name)
-                //{
-                //    ThrowIncompatibleTypesException(param.Token, formalParamType.Name, actualParamType.Name);
-                //}
+                if (actualParamType.Name != formalParamType.Name)
+                {
+                    ThrowIncompatibleTypesException(param.Token, formalParamType.Name, actualParamType.Name);
+                }
             }
 
             functionCall.SymbolFunction = functionSymbol as SymbolFunction;
@@ -375,12 +381,12 @@ namespace Interpreter.AnalyzerService
 
         private Symbol VisitReturnStatement(ASTReturn node)
         {
-            if (node.Condition != null)
+            if (node.Expression != null)
             {
-                return Visit(node.Condition);
+                return Visit(node.Expression);
             }
 
-            return null;
+            return _currentScope.Lookup("void");
         }
 
         private Symbol VisitBreakStatement(ASTBreak node)
@@ -419,6 +425,11 @@ namespace Interpreter.AnalyzerService
                 _currentScope = elseScope;
 
                 var elseType = Visit(node.Else);
+
+                if (returnType.Name != elseType.Name)
+                {
+                    ThrowIncompatibleTypesException(node.Token, returnType.Name, elseType.Name);
+                }
 
                 DebugPrintSymbolTable();
 
