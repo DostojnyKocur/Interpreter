@@ -17,6 +17,8 @@ namespace Interpreter.ParserService
         private Token _currentToken = null;
         private Token _secondToken = null;
         private Token _thirdToken = null;
+        private Token _fourthToken = null;
+        private Token _fifthToken = null;
 
         public Parser(ILexer lexer)
         {
@@ -24,6 +26,8 @@ namespace Interpreter.ParserService
             _currentToken = _lexer.GetNextToken();
             _secondToken = _lexer.GetNextToken();
             _thirdToken = _lexer.GetNextToken();
+            _fourthToken = _lexer.GetNextToken();
+            _fifthToken = _lexer.GetNextToken();
         }
 
         public ASTNode Parse()
@@ -79,7 +83,8 @@ namespace Interpreter.ParserService
                 case TokenType.TypeNumber:
                 case TokenType.TypeBool:
                 case TokenType.TypeString:
-                    if (_thirdToken.Type == TokenType.LeftParen)
+                    if (_thirdToken.Type == TokenType.LeftParen ||
+                        (_secondToken.Type == TokenType.LeftBracket && _fifthToken.Type == TokenType.LeftParen))
                     {
                         return FunctionDefinition();
                     }
@@ -144,14 +149,17 @@ namespace Interpreter.ParserService
             var name = _currentToken;
             Eat(TokenType.Identifier);
 
+            Eat(TokenType.LeftParen);
             var argumentList = ParameterList();
+            Eat(TokenType.RightParen);
+
             var body = CompoundStatement();
             return new ASTFunctionDefinition(name, returnType, argumentList, body);
         }
 
         private List<ASTParam> ParameterList()
         {
-            Eat(TokenType.LeftParen);
+            
 
             var parameters = new List<ASTParam>();
 
@@ -169,8 +177,6 @@ namespace Interpreter.ParserService
                     parameters.Add(anotherParam);
                 }
             }
-
-            Eat(TokenType.RightParen);
 
             return parameters;
         }
@@ -276,7 +282,9 @@ namespace Interpreter.ParserService
             {
                 _currentToken = _secondToken;
                 _secondToken = _thirdToken;
-                _thirdToken = _lexer.GetNextToken();
+                _thirdToken = _fourthToken;
+                _fourthToken = _fifthToken;
+                _fifthToken = _lexer.GetNextToken();
             }
             else
             {

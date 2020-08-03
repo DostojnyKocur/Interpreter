@@ -2,25 +2,30 @@
 	/*
 		This function returns doubled parameter.
 	*/
-	number GetDoubled(number n)
+	number[] GetDoubled(number n)
 	{
-		return 2 * n;
+		number[] result = [n, 2 * n];
+		return result;
 	}
 
-	void Main()
+	number Main()
 	{
+		number x = 2;
+	
 		//this is an array
 		number[] array = [2, 3, 4, 5];
 		
 		array[0] = 17;
 		
-		print(array[0]); //this is inline comment
+		//print(array[0]); //this is inline comment
 		
 		number t = 5 / 7; 
 		
-		number res = GetDoubled(array[0]);
+		number[] res = GetDoubled(array[0]);
 		
-		print(res);
+		//print(res);
+		
+		return 0;
 	}
 }
 

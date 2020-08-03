@@ -186,24 +186,7 @@ namespace Interpreter.AnalyzerService
 
         private Symbol VisitVariableDeclaration(ASTVariableDeclaration node)
         {
-            var typeName = node.VariableType.Name;
-            var typeSymbol = _currentScope.Lookup(typeName);
-
-            if (node.VariableType.TypeSpec is ASTArrayType)
-            {
-                var arrayTypeName = $"{typeName}{ArrayTypeSuffix}";
-
-                var arrayTypeSymbol = _currentScope.Lookup(arrayTypeName);
-                if(arrayTypeSymbol is null)
-                {
-                    typeSymbol = new SymbolArrayType(arrayTypeName, typeSymbol);
-                    _currentScope.Define(typeSymbol);
-                }
-                else
-                {
-                    typeSymbol = arrayTypeSymbol;
-                }
-            }
+            var typeSymbol = PrepareTypeSymbol(node.VariableType);
 
             var variableName = node.Variable.Name;
             var variableSymbol = new SymbolVariable(variableName, typeSymbol);
@@ -292,8 +275,7 @@ namespace Interpreter.AnalyzerService
 
         private Symbol VisitFunctionDefinition(ASTFunctionDefinition node)
         {
-            var typeName = node.ReturnType.Name;
-            var typeSymbol = _currentScope.Lookup(typeName);
+            var typeSymbol = PrepareTypeSymbol(node.ReturnType);
 
             var functionName = node.Token.Value;
             var functionSymbol = new SymbolFunction(functionName, typeSymbol);
@@ -491,6 +473,30 @@ namespace Interpreter.AnalyzerService
             Logger.DebugScope($"Leave scope : for");
 
             return returnType;
+        }
+
+        private Symbol PrepareTypeSymbol(ASTType node)
+        {
+            var typeName = node.Name;
+            var typeSymbol = _currentScope.Lookup(typeName);
+
+            if (node.TypeSpec is ASTArrayType)
+            {
+                var arrayTypeName = $"{typeName}{ArrayTypeSuffix}";
+
+                var arrayTypeSymbol = _currentScope.Lookup(arrayTypeName);
+                if (arrayTypeSymbol is null)
+                {
+                    typeSymbol = new SymbolArrayType(arrayTypeName, typeSymbol);
+                    _currentScope.Define(typeSymbol);
+                }
+                else
+                {
+                    typeSymbol = arrayTypeSymbol;
+                }
+            }
+
+            return typeSymbol;
         }
 
         private void ThrowSemanticException(ErrorCode errorCode, Token token)
