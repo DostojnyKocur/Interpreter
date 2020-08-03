@@ -136,7 +136,7 @@ namespace Interpreter.AnalyzerService
                 else
                 {
                     var currentType = Visit(child);
-                    if (currentType != null && currentType != null && currentType.Name != returnType.Name)
+                    if (currentType != returnType)
                     {
                         ThrowIncompatibleTypesException(child.Token, returnType.Name, currentType.Name);
                     }
@@ -168,21 +168,12 @@ namespace Interpreter.AnalyzerService
 
         private Symbol VisitVariablesDeclarations(ASTVariablesDeclarations node)
         {
-            Symbol variableType = null;
-
             foreach (var child in node.Children)
             {
-                if (variableType is null)
-                {
-                    variableType = Visit(child);
-                }
-                else
-                {
-                    Visit(child);
-                }
+                Visit(child);
             }
 
-            return variableType;
+            return null;
         }
 
         private Symbol VisitVariableDeclaration(ASTVariableDeclaration node)
@@ -199,7 +190,7 @@ namespace Interpreter.AnalyzerService
 
             _currentScope.Define(variableSymbol);
 
-            return typeSymbol;
+            return null;
         }
 
         private Symbol VisitArrayInitialization(ASTArrayInitialization node)
@@ -235,7 +226,9 @@ namespace Interpreter.AnalyzerService
                     leftType = Visit(variable);
                     break;
                 case ASTVariablesDeclarations variablesDeclarations:
-                    leftType = Visit(variablesDeclarations);
+                    Visit(variablesDeclarations);
+                    var firstVariable = variablesDeclarations.Children.First();
+                    leftType = Visit(firstVariable.Variable);
                     break;
                 default:
                     throw new ArgumentException($"Invalid AST node type {node.GetType()}");
