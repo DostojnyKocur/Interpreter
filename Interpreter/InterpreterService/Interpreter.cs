@@ -307,12 +307,28 @@ namespace Interpreter.InterpreterService
                     return result;
                 }
             }
-            else if (node.Else != null)
+            else
             {
-                var result = Visit(node.Else);
-                if (result != null && result.ControlType != ControlType.None)
+                foreach (var elif in node.Elifs)
                 {
-                    return result;
+                    var elifCondition = Visit(elif.Condition).Value;
+                    if (elifCondition)
+                    {
+                        var result = Visit(elif.IfTrue);
+                        if (result != null && result.ControlType != ControlType.None)
+                        {
+                            return result;
+                        }
+                    }
+                }
+
+                if (node.Else != null)
+                {
+                    var result = Visit(node.Else);
+                    if (result != null && result.ControlType != ControlType.None)
+                    {
+                        return result;
+                    }
                 }
             }
 

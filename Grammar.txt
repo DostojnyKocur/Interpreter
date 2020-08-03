@@ -21,7 +21,7 @@ break_statement				:	BREAK SEMI
 continue_statement			:	CONTINUE SEMI
 while_statement				:	WHILE LPAREN expression RPAREN statement
 for_statement				:	FOR LPAREN (assignment_statement (COMMA assignment_statement)*)? SEMI expression? SEMI (assignment_statement (COMMA assignment_statement)*)? RPAREN statement
-if_statement				:	IF LPAREN expression RPAREN statement (ELSE statement)?
+if_statement				:	IF LPAREN expression RPAREN statement (ELIF LPAREN expression RPAREN statement)* (ELSE statement)?
 array_initialization		:	LBRACKET (arithmetic_expression (COMMA arithmetic_expression)*)? RBRACKET
 arithmetic_expression		:	term ((PLUS | MINUS) term)* 
 								| expression

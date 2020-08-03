@@ -68,6 +68,8 @@ namespace Interpreter.AnalyzerService
                     return VisitContinueStatement(continueStatement);
                 case ASTIfElse ifElseStatement:
                     return VisitIfElseStatement(ifElseStatement);
+                case ASTElif elifStatement:
+                    return VisitElifStatement(elifStatement);
                 case ASTWhile whileStatement:
                     return VisitWhileStatement(whileStatement);
                 case ASTFor forStatement:
@@ -258,10 +260,10 @@ namespace Interpreter.AnalyzerService
                 ThrowSemanticException(ErrorCode.IdentifierNotFound, node.Token);
             }
 
-            if(node.ArrayIndexFrom != null)
+            if (node.ArrayIndexFrom != null)
             {
                 var indexType = Visit(node.ArrayIndexFrom);
-                if(indexType.Name != "number")
+                if (indexType.Name != "number")
                 {
                     ThrowIncompatibleTypesException(node.ArrayIndexFrom.Token, indexType.Name, "number");
                 }
@@ -349,7 +351,7 @@ namespace Interpreter.AnalyzerService
                 var param = functionCall.ActualParameters[i];
                 var actualParamType = Visit(param);
                 var formalParamType = formalParameters[i].Type;
-                if (actualParamType.Name != formalParamType.Name)
+                if (actualParamType != formalParamType)
                 {
                     ThrowIncompatibleTypesException(param.Token, formalParamType.Name, actualParamType.Name);
                 }
@@ -399,6 +401,21 @@ namespace Interpreter.AnalyzerService
             _currentScope = _currentScope.EnclosingScope;
             Logger.DebugScope($"Leave scope : if");
 
+            foreach (var elif in node.Elifs)
+            {
+                var elifType = Visit(elif);
+
+                if (returnType is null)
+                {
+                    returnType = elifType;
+                }
+
+                if (returnType != elifType)
+                {
+                    ThrowIncompatibleTypesException(node.Token, returnType.Name, elifType.Name);
+                }
+            }
+
             if (node.Else != null)
             {
                 Logger.DebugScope($"Enter scope : else");
@@ -407,7 +424,12 @@ namespace Interpreter.AnalyzerService
 
                 var elseType = Visit(node.Else);
 
-                if (returnType.Name != elseType.Name)
+                if (returnType is null)
+                {
+                    returnType = elseType;
+                }
+
+                if (returnType != elseType)
                 {
                     ThrowIncompatibleTypesException(node.Token, returnType.Name, elseType.Name);
                 }
@@ -417,6 +439,28 @@ namespace Interpreter.AnalyzerService
                 _currentScope = _currentScope.EnclosingScope;
                 Logger.DebugScope($"Leave scope : else");
             }
+
+            return returnType;
+        }
+
+        private Symbol VisitElifStatement(ASTElif node)
+        {
+            var conditionType = Visit(node.Condition);
+            if (conditionType.Name != "bool")
+            {
+                ThrowIncompatibleTypesException(node.Token, conditionType.Name, "bool");
+            }
+
+            Logger.DebugScope($"Enter scope : elif");
+            var ifScope = new ScopedSymbolTable("if", _currentScope.Level + 1, _currentScope);
+            _currentScope = ifScope;
+
+            var returnType = Visit(node.IfTrue);
+
+            DebugPrintSymbolTable();
+
+            _currentScope = _currentScope.EnclosingScope;
+            Logger.DebugScope($"Leave scope : elif");
 
             return returnType;
         }

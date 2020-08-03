@@ -54,13 +54,28 @@ namespace Interpreter.ParserService
             var condition = Expression();
             Eat(TokenType.RightParen);
             var ifTrue = Statement();
+            var elifs = new List<ASTElif>();
+
+            while (_currentToken.Type == TokenType.Elif)
+            {
+                var elifToken = _currentToken;
+                Eat(TokenType.Elif);
+                Eat(TokenType.LeftParen);
+                var elifCondition = Expression();
+                Eat(TokenType.RightParen);
+                var ifElifTrue = Statement();
+
+                elifs.Add(new ASTElif(elifToken, elifCondition, ifElifTrue));
+            }
+
+            ASTNode @else = null;
             if (_currentToken.Type == TokenType.Else)
             {
                 Eat(TokenType.Else);
-                return new ASTIfElse(token, condition, ifTrue, Statement());
+                @else = Statement();
             }
 
-            return new ASTIfElse(token, condition, ifTrue, null);
+            return new ASTIfElse(token, condition, ifTrue, @elifs, @else);
         }
 
         private ASTFor ForStatement()

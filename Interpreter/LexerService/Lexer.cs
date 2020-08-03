@@ -20,6 +20,7 @@ namespace Interpreter.LexerService
             { "true",  new Token(TokenType.ConstBool, "true") },
             { "false",  new Token(TokenType.ConstBool, "false") },
             { "if",  new Token(TokenType.If, "if") },
+            { "elif",  new Token(TokenType.Elif, "elif") },
             { "else",  new Token(TokenType.Else, "else") },
             { "while",  new Token(TokenType.While, "while") },
             { "for",  new Token(TokenType.For, "for") }

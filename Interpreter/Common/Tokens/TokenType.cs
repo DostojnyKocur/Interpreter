@@ -11,6 +11,7 @@
         ConstString,
 
         If,
+        Elif,
         Else,
         While,
         For,
