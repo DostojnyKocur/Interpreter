@@ -1,4 +1,4 @@
-﻿using Interpreter.ParserService.AST;
+﻿using Interpreter.Common.AST;
 
 namespace Interpreter.AnalyzerService
 {

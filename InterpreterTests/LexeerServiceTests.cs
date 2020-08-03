@@ -1,5 +1,5 @@
-﻿using Interpreter.LexerService;
-using Interpreter.LexerService.Tokens;
+﻿using Interpreter.Common.Tokens;
+using Interpreter.LexerService;
 using NUnit.Framework;
 
 namespace InterpreterTests

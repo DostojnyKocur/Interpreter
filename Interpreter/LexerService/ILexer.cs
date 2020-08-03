@@ -1,4 +1,4 @@
-﻿using Interpreter.LexerService.Tokens;
+﻿using Interpreter.Common.Tokens;
 
 namespace Interpreter.LexerService
 {

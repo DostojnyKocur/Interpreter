@@ -1,5 +1,5 @@
-﻿using Interpreter.LexerService.Tokens;
-using Interpreter.ParserService.AST;
+﻿using Interpreter.Common.AST;
+using Interpreter.Common.Tokens;
 
 namespace Interpreter.ParserService
 {

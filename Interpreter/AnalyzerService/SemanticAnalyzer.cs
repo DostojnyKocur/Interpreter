@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Linq;
-using Interpreter.AnalyzerService.Symbols;
 using Interpreter.Common;
+using Interpreter.Common.AST;
 using Interpreter.Common.Errors;
-using Interpreter.LexerService.Tokens;
-using Interpreter.ParserService.AST;
-using Interpreter.Symbols;
+using Interpreter.Common.Symbols;
+using Interpreter.Common.Tokens;
 
 namespace Interpreter.AnalyzerService
 {

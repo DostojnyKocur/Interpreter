@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using Interpreter.Common;
+using Interpreter.Common.AST;
+using Interpreter.Common.Symbols;
+using Interpreter.Common.Tokens;
 using Interpreter.InterpreterService.Memory;
-using Interpreter.LexerService.Tokens;
-using Interpreter.ParserService.AST;
-using Interpreter.Symbols;
 
 namespace Interpreter.InterpreterService
 {

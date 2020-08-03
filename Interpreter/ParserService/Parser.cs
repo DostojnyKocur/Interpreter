@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
+using Interpreter.Common.AST;
 using Interpreter.Common.Errors;
+using Interpreter.Common.Tokens;
 using Interpreter.LexerService;
-using Interpreter.LexerService.Tokens;
-using Interpreter.ParserService.AST;
 
 namespace Interpreter.ParserService
 {
