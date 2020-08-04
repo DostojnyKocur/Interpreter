@@ -46,6 +46,7 @@
         RigthBracket,
         Assign,
         Semicolon,
+        Colon,
         Comma,
 
         EOF

@@ -127,13 +127,48 @@ namespace Interpreter.InterpreterService
             {
                 var array = (List<dynamic>)_callStack.Top[node.Name];
                 var indexFrom = (int)Visit(node.ArrayIndexFrom).Value;
+                var integreIndexFrom = indexFrom < 0 ? array.Count + indexFrom : indexFrom;
+                var integreIndexTo = array.Count - 1;
+                var integerIndexStep = 1;
 
-                var integreIndex = indexFrom < 0 ? array.Count + indexFrom : indexFrom;
+                if (node.ArrayIndexTo != null)
+                {
+                    var indexTo = (int)Visit(node.ArrayIndexTo).Value;
+                    integreIndexTo = indexTo < 0 ? array.Count + indexTo : indexTo == int.MaxValue ? integreIndexTo : indexTo;
+
+                    if (node.ArrayIndexStep != null)
+                    {
+                        integerIndexStep = (int)Visit(node.ArrayIndexStep).Value;
+                    }
+
+                    var result = new List<dynamic>();
+
+                    var from = integreIndexTo > integreIndexFrom ? integreIndexFrom : integreIndexTo;
+                    var to = integreIndexFrom > integreIndexTo ? integreIndexFrom : integreIndexTo;
+                    var step = integerIndexStep < 0 ? -integerIndexStep : integerIndexStep;
+
+                    for (var i = from; i < to; i += step)
+                    {
+                        result.Add(array[i]);
+                    }
+
+                    if ((integreIndexFrom <= integreIndexTo && integerIndexStep < 0) ||
+                        (integreIndexFrom > integreIndexTo && integerIndexStep > 0))
+                    {
+                        result.Reverse();
+                    }
+
+                    return new VisitResult
+                    {
+                        ControlType = ControlType.Return,
+                        Value = result
+                    };
+                }
 
                 return new VisitResult
                 {
                     ControlType = ControlType.Return,
-                    Value = array[integreIndex]
+                    Value = array[integreIndexFrom]
                 };
 
             }

@@ -255,10 +255,30 @@ namespace Interpreter.AnalyzerService
 
             if (node.ArrayIndexFrom != null)
             {
-                var indexType = Visit(node.ArrayIndexFrom);
-                if (indexType.Name != "number")
+                var indexFromType = Visit(node.ArrayIndexFrom);
+                if (indexFromType.Name != "number")
                 {
-                    ThrowIncompatibleTypesException(node.ArrayIndexFrom.Token, indexType.Name, "number");
+                    ThrowIncompatibleTypesException(node.ArrayIndexFrom.Token, indexFromType.Name, "number");
+                }
+
+                if(node.ArrayIndexTo != null)
+                {
+                    var indexToType = Visit(node.ArrayIndexTo);
+                    if (indexToType.Name != "number")
+                    {
+                        ThrowIncompatibleTypesException(node.ArrayIndexTo.Token, indexToType.Name, "number");
+                    }
+
+                    if (node.ArrayIndexStep != null)
+                    {
+                        var indexStepType = Visit(node.ArrayIndexStep);
+                        if (indexStepType.Name != "number")
+                        {
+                            ThrowIncompatibleTypesException(node.ArrayIndexStep.Token, indexStepType.Name, "number");
+                        }
+                    }
+
+                    return variableSymbol.Type;
                 }
 
                 return variableSymbol.Type.Type;

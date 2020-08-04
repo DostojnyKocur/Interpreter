@@ -251,17 +251,31 @@ namespace Interpreter.ParserService
             if (_currentToken.Type == TokenType.LeftBracket)
             {
                 Eat(TokenType.LeftBracket);
-                indexFrom = ArithmeticExpression();
-
-                if(_currentToken.Type == TokenType.Comma)
+                if (_currentToken.Type == TokenType.Colon)
                 {
-                    Eat(TokenType.Comma);
-                    indexTo = ArithmeticExpression();
+                    indexFrom = new ASTNumber(new Token(TokenType.ConstNumber, "0", _currentToken.LineNumber, _currentToken.Column));
+                }
+                else
+                {
+                    indexFrom = ArithmeticExpression();
                 }
 
-                if (_currentToken.Type == TokenType.Comma)
+                if(_currentToken.Type == TokenType.Colon)
                 {
-                    Eat(TokenType.Comma);
+                    Eat(TokenType.Colon);
+                    if (_currentToken.Type == TokenType.Colon || _currentToken.Type == TokenType.RigthBracket)
+                    {
+                        indexTo = new ASTNumber(new Token(TokenType.ConstNumber, $"{int.MaxValue}", _currentToken.LineNumber, _currentToken.Column));
+                    }
+                    else
+                    {
+                        indexTo = ArithmeticExpression();
+                    }
+                }
+
+                if (_currentToken.Type == TokenType.Colon)
+                {
+                    Eat(TokenType.Colon);
                     indexStep = ArithmeticExpression();
                 }
 

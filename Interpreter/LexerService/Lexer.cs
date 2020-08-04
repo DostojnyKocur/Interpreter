@@ -156,6 +156,9 @@ namespace Interpreter.LexerService
                 case ';':
                     Advance();
                     return new Token(TokenType.Semicolon, null, lineNumber, column);
+                case ':':
+                    Advance();
+                    return new Token(TokenType.Colon, null, lineNumber, column);
                 case ',':
                     Advance();
                     return new Token(TokenType.Comma, null, lineNumber, column);
