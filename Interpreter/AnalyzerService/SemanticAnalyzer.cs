@@ -81,17 +81,17 @@ namespace Interpreter.AnalyzerService
 
         private Symbol VisitNumber(ASTNumber node)
         {
-            return _currentScope.Lookup("number");
+            return _currentScope.LookupSingle("number");
         }
 
         private Symbol VisitBool(ASTBool node)
         {
-            return _currentScope.Lookup("bool");
+            return _currentScope.LookupSingle("bool");
         }
 
         private Symbol VisitString(ASTString node)
         {
-            return _currentScope.Lookup("string");
+            return _currentScope.LookupSingle("string");
         }
 
         private Symbol VisitEmpty(ASTEmpty node)
@@ -106,7 +106,7 @@ namespace Interpreter.AnalyzerService
 
             Visit(node.Root);
 
-            var mainFunction = _currentScope.Lookup("Main", true);
+            var mainFunction = _currentScope.LookupSingle("Main", true);
             if (mainFunction == null)
             {
                 ThrowSemanticException(ErrorCode.MissingMain, node.Token);
@@ -136,7 +136,7 @@ namespace Interpreter.AnalyzerService
                 else
                 {
                     var currentType = Visit(child);
-                    if (currentType != returnType)
+                    if (currentType != null && currentType.Name != "void" && returnType.Name != "void" && currentType != returnType)
                     {
                         ThrowIncompatibleTypesException(child.Token, returnType.Name, currentType.Name);
                     }
@@ -156,14 +156,14 @@ namespace Interpreter.AnalyzerService
                 ThrowIncompatibleTypesException(node.Token, leftType.Name, rightType.Name);
             }
 
-            return BoolOperators.Contains(node.Type) ? _currentScope.Lookup("bool") : leftType;
+            return BoolOperators.Contains(node.Type) ? _currentScope.LookupSingle("bool") : leftType;
         }
 
         private Symbol VisitUnaryOperator(ASTUnaryOperator node)
         {
             var type = Visit(node.Expression);
 
-            return BoolOperators.Contains(node.Type) ? _currentScope.Lookup("bool") : type;
+            return BoolOperators.Contains(node.Type) ? _currentScope.LookupSingle("bool") : type;
         }
 
         private Symbol VisitVariablesDeclarations(ASTVariablesDeclarations node)
@@ -183,7 +183,7 @@ namespace Interpreter.AnalyzerService
             var variableName = node.Variable.Name;
             var variableSymbol = new SymbolVariable(variableName, typeSymbol);
 
-            if (_currentScope.Lookup(variableName, true) != null)
+            if (_currentScope.LookupSingle(variableName, true) != null)
             {
                 ThrowSemanticException(ErrorCode.DuplicateIdentifier, node.Variable.Token);
             }
@@ -213,7 +213,7 @@ namespace Interpreter.AnalyzerService
                 }
             }
 
-            return _currentScope.Lookup($"{itemType.Name}{ArrayTypeSuffix}");
+            return _currentScope.LookupSingle($"{itemType.Name}{ArrayTypeSuffix}");
         }
 
         private Symbol VisitAssign(ASTAssign node)
@@ -247,7 +247,7 @@ namespace Interpreter.AnalyzerService
         private Symbol VisitVariable(ASTVariable node)
         {
             var variableName = node.Name;
-            var variableSymbol = _currentScope.Lookup(variableName);
+            var variableSymbol = _currentScope.LookupSingle(variableName);
             if (variableSymbol is null)
             {
                 ThrowSemanticException(ErrorCode.IdentifierNotFound, node.Token);
@@ -261,7 +261,7 @@ namespace Interpreter.AnalyzerService
                     ThrowIncompatibleTypesException(node.ArrayIndexFrom.Token, indexFromType.Name, "number");
                 }
 
-                if(node.ArrayIndexTo != null)
+                if (node.ArrayIndexTo != null)
                 {
                     var indexToType = Visit(node.ArrayIndexTo);
                     if (indexToType.Name != "number")
@@ -294,10 +294,7 @@ namespace Interpreter.AnalyzerService
             var functionName = node.Token.Value;
             var functionSymbol = new SymbolFunction(functionName, typeSymbol);
 
-            if (_currentScope.Lookup(functionName, true) != null)
-            {
-                ThrowSemanticException(ErrorCode.DuplicateIdentifier, node.Token);
-            }
+            var overloadedFunctions = _currentScope.LookupMany(functionName, true);
 
             _currentScope.Define(functionSymbol);
 
@@ -309,10 +306,10 @@ namespace Interpreter.AnalyzerService
             foreach (var param in node.Parameters)
             {
                 var paramName = param.Variable.Name;
-                var paramType = _currentScope.Lookup(param.VariableType.Name);
+                var paramType = _currentScope.LookupSingle(param.VariableType.Name);
                 var paramSymbol = new SymbolVariable(paramName, paramType);
 
-                if (_currentScope.Lookup(paramName, true) != null)
+                if (_currentScope.LookupSingle(paramName, true) != null)
                 {
                     ThrowSemanticException(ErrorCode.DuplicateIdentifier, param.Variable.Token);
                 }
@@ -332,6 +329,31 @@ namespace Interpreter.AnalyzerService
                 ThrowSemanticException(ErrorCode.MissingReturnStatement, node.Token);
             }
 
+            foreach (var overloadedFunction in overloadedFunctions)
+            {
+                var function = overloadedFunction as SymbolFunction;
+
+                if (function.Parameters.Count != functionSymbol.Parameters.Count)
+                {
+                    continue;
+                }
+
+                var allParametersHaveSameType = true;
+                for (var i = 0; i < function.Parameters.Count; ++i)
+                {
+                    if (function.Parameters[i].Type != functionSymbol.Parameters[i].Type)
+                    {
+                        allParametersHaveSameType = false;
+                        break;
+                    }
+                }
+
+                if (allParametersHaveSameType)
+                {
+                    ThrowSemanticException(ErrorCode.DuplicateIdentifier, node.Token);
+                }
+            }
+
             functionSymbol.Body = node.Body;
 
             DebugPrintSymbolTable();
@@ -344,47 +366,63 @@ namespace Interpreter.AnalyzerService
 
         private Symbol VisitFunctionCall(ASTFunctionCall functionCall)
         {
-            var functionSymbol = _currentScope.Lookup(functionCall.FunctionName);
+            var functionSymbols = _currentScope.LookupMany(functionCall.FunctionName);
 
-            if (functionSymbol is null)
+            if (!functionSymbols.Any())
             {
                 ThrowSemanticException(ErrorCode.IdentifierNotFound, functionCall.Token);
             }
 
-            var formalParameters = (functionSymbol as SymbolFunction).Parameters;
-            var actualParameters = functionCall.ActualParameters;
-
-            if (formalParameters.Count != actualParameters.Count && functionSymbol.Name != "print")
+            foreach (var overloadedFunction in functionSymbols)
             {
-                ThrowSemanticException(ErrorCode.WrongParamNumber, functionCall.Token);
-            }
+                var formalParameters = (overloadedFunction as SymbolFunction).Parameters;
+                var actualParameters = functionCall.ActualParameters;
 
-            for (var i = 0; i < formalParameters.Count; ++i)
-            {
-                var param = functionCall.ActualParameters[i];
-                var actualParamType = Visit(param);
-                var formalParamType = formalParameters[i].Type;
-                if (actualParamType != formalParamType)
+                if (formalParameters.Count != actualParameters.Count)
                 {
-                    ThrowIncompatibleTypesException(param.Token, formalParamType.Name, actualParamType.Name);
+                    continue;
                 }
+
+                var parametersAreValid = true;
+                for (var i = 0; i < formalParameters.Count; ++i)
+                {
+                    var param = functionCall.ActualParameters[i];
+                    var actualParamType = Visit(param);
+                    var formalParamType = formalParameters[i].Type;
+                    if (actualParamType != formalParamType)
+                    {
+                        parametersAreValid = false;
+                        break;
+                    }
+                }
+
+                if (!parametersAreValid)
+                {
+                    continue;
+                }
+
+                functionCall.SymbolFunction = overloadedFunction as SymbolFunction;
+
+                var returnType = (overloadedFunction as SymbolFunction).ReturnType;
+
+                return returnType.Name == "void" ? null : returnType;
             }
 
-            functionCall.SymbolFunction = functionSymbol as SymbolFunction;
+            ThrowSemanticException(ErrorCode.WrongParamNumber, functionCall.Token);
 
-            return (functionSymbol as SymbolFunction).ReturnType;
+            return null;
         }
 
         private Symbol PrepareTypeSymbol(ASTType node)
         {
             var typeName = node.Name;
-            var typeSymbol = _currentScope.Lookup(typeName);
+            var typeSymbol = _currentScope.LookupSingle(typeName);
 
             if (node.TypeSpec is ASTArrayType)
             {
                 var arrayTypeName = $"{typeName}{ArrayTypeSuffix}";
 
-                var arrayTypeSymbol = _currentScope.Lookup(arrayTypeName);
+                var arrayTypeSymbol = _currentScope.LookupSingle(arrayTypeName);
                 if (arrayTypeSymbol is null)
                 {
                     typeSymbol = new SymbolArrayType(arrayTypeName, typeSymbol);

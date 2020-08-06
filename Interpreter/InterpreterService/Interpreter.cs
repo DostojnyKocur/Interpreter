@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Interpreter.Common;
 using Interpreter.Common.AST;
+using Interpreter.Common.Extensions;
 using Interpreter.Common.Symbols;
 using Interpreter.Common.Tokens;
 using Interpreter.InterpreterService.Memory;
@@ -298,6 +299,12 @@ namespace Interpreter.InterpreterService
             var result = symbolFunction is SymbolBuiltinFunction ? BuiltinFunctionCall(functionCall) : Visit(symbolFunction.Body);
 
             var returnedValue = result != null ? result.Value : "null";
+
+            if(returnedValue is List<dynamic> collection)
+            {
+                returnedValue = collection.ToPrint();
+            }
+
             Logger.DebugMemory($"Leave {functionName}, returned value ({returnedValue})");
             Logger.DebugMemory(_callStack.ToString());
 
@@ -574,8 +581,18 @@ namespace Interpreter.InterpreterService
         private VisitResult PrintFunctionCall()
         {
             var value = _callStack.Top["str"];
+            string valueToPrint;
 
-            Console.WriteLine($"{value}");
+            if (value is List<dynamic> collection)
+            {
+                valueToPrint = collection.ToPrint();
+            }
+            else
+            {
+                valueToPrint = $"{value}";
+            }
+
+            Console.WriteLine(valueToPrint);
 
             return null;
         }

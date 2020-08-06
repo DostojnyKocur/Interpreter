@@ -13,7 +13,7 @@ namespace Interpreter.AnalyzerService
                 return Visit(node.Expression);
             }
 
-            return _currentScope.Lookup("void");
+            return _currentScope.LookupSingle("void");
         }
 
         private Symbol VisitBreakStatement(ASTBreak node)

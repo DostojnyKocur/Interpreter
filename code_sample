@@ -8,6 +8,12 @@
 		return result;
 	}
 	
+	number[] GetDoubled(number n, number n2)
+	{
+		number[] result = [n, 2 * n2];
+		return result;
+	}
+	
 	number ElifTest(number x)
 	{
 		if(x == 0)
@@ -43,13 +49,17 @@
 		
 		array[0] = 17;
 		
-		//print(array[0]); //this is inline comment
+		print(array[0]); //this is inline comment
 		
 		number t = 5 / 7; 
 		
 		number[] res = GetDoubled(array[0]);
 		
-		//print(res);
+		print(res);
+		
+		number[] res2 = GetDoubled(array[0], array2[3]);
+		
+		print(res2);
 		
 		number eliftest = ElifTest(77);
 		
