@@ -5,7 +5,7 @@ namespace Interpreter.Common.AST
 {
     public class ASTFunctionDefinition : ASTNode
     {
-        public ASTFunctionDefinition(Token token, ASTType returnType, IEnumerable<ASTParam> parameterList, ASTCompound body)
+        public ASTFunctionDefinition(Token token, ASTType returnType, IEnumerable<ASTParam> parameterList, ASTBlock body)
         {
             ReturnType = returnType;
             Token = token;
@@ -15,6 +15,6 @@ namespace Interpreter.Common.AST
 
         public ASTType ReturnType { get; }
         public List<ASTParam> Parameters { get; } = new List<ASTParam>();
-        public ASTCompound Body { get; }
+        public ASTBlock Body { get; }
     }
 }

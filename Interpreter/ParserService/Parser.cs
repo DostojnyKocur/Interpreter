@@ -46,13 +46,13 @@ namespace Interpreter.ParserService
             return new ASTProgram(_currentToken, Statement());
         }
 
-        private ASTCompound CompoundStatement()
+        private ASTBlock Block()
         {
             var token = _currentToken;
             Eat(TokenType.ScopeBegin);
             var nodes = StatementList();
             Eat(TokenType.ScopeEnd);
-            return new ASTCompound(token, nodes);
+            return new ASTBlock(token, nodes);
         }
 
         private IEnumerable<ASTNode> StatementList()
@@ -74,7 +74,7 @@ namespace Interpreter.ParserService
             switch (_currentToken.Type)
             {
                 case TokenType.ScopeBegin:
-                    return CompoundStatement();
+                    return Block();
                 case TokenType.Identifier:
                     var resultIdentifier = _secondToken.Type == TokenType.LeftParen ? FunctionCall() : (ASTNode)AssignmentStatement(Variable());
                     Eat(TokenType.Semicolon);
@@ -153,7 +153,7 @@ namespace Interpreter.ParserService
             var argumentList = ParameterList();
             Eat(TokenType.RightParen);
 
-            var body = CompoundStatement();
+            var body = Block();
             return new ASTFunctionDefinition(name, returnType, argumentList, body);
         }
 

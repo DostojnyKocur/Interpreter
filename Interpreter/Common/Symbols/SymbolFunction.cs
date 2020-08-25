@@ -13,7 +13,7 @@ namespace Interpreter.Common.Symbols
 
         public Symbol ReturnType { get; }
         public List<SymbolVariable> Parameters { get; } = new List<SymbolVariable>();
-        public ASTCompound Body { get; set; }
+        public ASTBlock Body { get; set; }
 
         public override string ToString()
         {

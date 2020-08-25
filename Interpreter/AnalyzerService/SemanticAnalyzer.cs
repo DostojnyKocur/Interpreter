@@ -34,8 +34,8 @@ namespace Interpreter.AnalyzerService
                     return VisitEmpty(empty);
                 case ASTProgram program:
                     return VisitProgram(program);
-                case ASTCompound compound:
-                    return VisitCompound(compound);
+                case ASTBlock block:
+                    return VisitBlock(block);
                 case ASTBinaryOperator binaryOperator:
                     return VisitBinaryOperator(binaryOperator);
                 case ASTUnaryOperator unaryOperator:
@@ -123,7 +123,7 @@ namespace Interpreter.AnalyzerService
             return null;
         }
 
-        private Symbol VisitCompound(ASTCompound node)
+        private Symbol VisitBlock(ASTBlock node)
         {
             Symbol returnType = null;
 
@@ -462,8 +462,8 @@ namespace Interpreter.AnalyzerService
             {
                 case ASTReturn @return:
                     return true;
-                case ASTCompound compound:
-                    foreach (var children in compound.Children)
+                case ASTBlock block:
+                    foreach (var children in block.Children)
                     {
                         result |= HasReturnStatement(children);
                     }

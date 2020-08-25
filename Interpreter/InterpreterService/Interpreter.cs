@@ -38,8 +38,8 @@ namespace Interpreter.InterpreterService
                     return VisitBinaryOperator(binaryOperator);
                 case ASTUnaryOperator unaryOperator:
                     return VisitUnaryOperator(unaryOperator);
-                case ASTCompound compound:
-                    return VisitCompound(compound);
+                case ASTBlock block:
+                    return VisitBlock(block);
                 case ASTAssign assign:
                     return VisitAssign(assign);
                 case ASTVariable variable:
@@ -433,7 +433,7 @@ namespace Interpreter.InterpreterService
             return null;
         }
 
-        private VisitResult VisitCompound(ASTCompound node)
+        private VisitResult VisitBlock(ASTBlock node)
         {
             foreach (var child in node.Children)
             {

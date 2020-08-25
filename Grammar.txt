@@ -1,8 +1,8 @@
 program						:	statement
-compound_statement			:	SCOPEBEGIN statement_list SCOPEEND
+block						:	SCOPEBEGIN statement_list SCOPEEND
 statement_list				:	statement 
 								| statement statement_list
-statement					:	compound_statement 
+statement					:	block 
 								| assignment_statement SEMI 
 								| variables_declarations SEMI
 								| function_definition 
@@ -23,6 +23,7 @@ while_statement				:	WHILE LPAREN expression RPAREN statement
 for_statement				:	FOR LPAREN (assignment_statement (COMMA assignment_statement)*)? SEMI expression? SEMI (assignment_statement (COMMA assignment_statement)*)? RPAREN statement
 if_statement				:	IF LPAREN expression RPAREN statement (ELIF LPAREN expression RPAREN statement)* (ELSE statement)?
 array_initialization		:	LBRACKET (arithmetic_expression (COMMA arithmetic_expression)*)? RBRACKET
+								| LBRACKET array_initialization RBRACKET
 arithmetic_expression		:	term ((PLUS | MINUS) term)* 
 								| expression
 term						:	factor ((MUL | DIV | MOD) factor)*
@@ -42,7 +43,7 @@ not_condition				:	NOT not_condition
 comparison					: 	arithmetic_expression (COMAPRE arithmetic_expression)* 
 								| TRUE 
 								| FALSE
-function_definition			:	type_specification ID LPAREN parameter_list+ RPAREN compound_statement
+function_definition			:	type_specification ID LPAREN parameter_list+ RPAREN block
 parameter_list				:	(type_specification ID (COMMA)+ )*
 function_call				:	ID LPAREN (arithmetic_expression (COMMA arithmetic_expression)*)? RPAREN
 variables_declarations		:	variable_declaration*

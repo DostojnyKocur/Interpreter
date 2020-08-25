@@ -3,9 +3,9 @@ using Interpreter.Common.Tokens;
 
 namespace Interpreter.Common.AST
 {
-    public class ASTCompound : ASTNode
+    public class ASTBlock : ASTNode
     {
-        public ASTCompound(Token token, IEnumerable<ASTNode> children)
+        public ASTBlock(Token token, IEnumerable<ASTNode> children)
         {
             Token = token;
             Children.AddRange(children);
